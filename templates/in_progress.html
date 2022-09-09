@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block head %}<h1>News Source details</h1>{% endblock %}
+
+{% block body %}
+<div class="one">
+    <div class="two">
+        <h2>Side Bar</h2>
+        <ul>
+            <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source In Progress</a></li>
+            <li class="active"><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source Not Started</a></li>
+            <li><a href="{{url_for('get_completed_sources',table_name='News_source')}}">Completed News Sources</a></li>
+        </ul> 
+    </div>
+    <div class="content" align="center">
+        <div class="topbar">
+            <h2>{{msg}} </h2>                        
+        </div>  </br>
+        <div class="contentbar">
+        <form action="{{ url_for('update_table',table_name='News_source')}}" method="post" autocomplete="off">
+        <br>
+        <br>
+        <table>
+        <thead>
+            <th>ID</th>
+            <th>News Source</th>
+            <th>Present </th>
+            <th>Comment </th>
+
+        </thead>
+        <tbody>
+        {% for row in data  %}  
+        <tr> 
+                <td>
+                        {{row.id}} 
+                </td>    
+                <td>
+                    {{ row.name }} 
+                </td> 
+                <td>{{ row.present }} 
+                </td> 
+
+                <td> {{ row.comment }}  
+                </td>
+            
+        </tr> 
+        {% endfor %} 
+        </tbody>
+
+        </table>
+        <br>
+        <br>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+
