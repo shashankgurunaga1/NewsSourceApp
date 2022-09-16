@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <meta charset="UTF-8">   
+        <link rel="stylesheet" href="../static/style.css">
+
+    </head>
+<body bgcolor="#e6ffee">
+   <div class="one">
+            <div class="two">
+                <h2>Side Bar</h2>
+                <ul>
+                    <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source In Progress</a></li>
+                    <li class="active"><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source Not Started</a></li>
+                    <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">Completed News Sources</a></li>
+                    <li><a href="{{url_for('copy_file')}}">Upload File</a></li>
+                </ul> 
+            </div>
+            <div class="content" align="center">
+                <div class="topbar">
+                    <h2>{{msg}} </h2>                        
+                </div>  </br>
+                <div class="contentbar">
+                    <form action="{{ url_for('copy1')}}" method="post" autocomplete="off" enctype="multipart/form-data" >
+                        <label ><b>Choose the folder to access:</b></label>
+                        <br>
+                        <br>
+                        <input type="file" placeholder="Choose folder" id="file"  name="file" required/><br><br>
+                        
+                        <br>
+                        
+                        <button name="submit" onclick="copy1()">Upload FIle</button>
+                    </form>
+                </div>
+            </div>
+    </div>
+    
+</body>
+</html>

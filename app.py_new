@@ -1,36 +1,42 @@
 from flask import Flask,render_template,request,url_for
+#from flask_sqlalchemy import SQLAlchemy
+#from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+#from flask_mysqldb import MYSQL;
 import pymysql
 import pymysql.cursors
 import traceback
-from flask import request
+import shutil
+#from flask_wtf import FlaskForm
+#from wtforms import Form, TextAreaField, validators, StringField, SubmitField
 import os
-
+from werkzeug.utils import secure_filename
+import pandas as pd
+import re
+import dr
+import scp
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '123'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','xlsx'}
+UPLOAD_FOLDER = 'C:\\Users\\shash\\OneDrive\\Desktop\\FlaskP1\\'
 
-
-
-@app.errorhandler(404)
-def page_not_found(error):
-    return 'This route does not exist {}'.format(request.url), 404
-
+            
 
          
 # function for setting DB cvonnection 
 def setup_connection():
-    user = 'admin'
-    DB_PASSWORD = 'HeyMultilex9087'
+    user = 'root'
+    DB_PASSWORD = 'welcome123'
     DB_PORT = 3306
     passw = DB_PASSWORD
-    host =  'multilex-db.csgyi8splofr.ap-south-1.rds.amazonaws.com'
+    host =  'localhost'
     port = DB_PORT
     database = 'preipo'
     conn = pymysql.connect(host=host,port=port,user=user,passwd=passw,db=database,cursorclass = pymysql.cursors.DictCursor)
     return conn
 
-#function for getting table record 
+#function for getting table record for the two random chosen news_sources
 def get_table_record(table_name,rowid):
     conn = setup_connection()
     row12=rowid[0]
@@ -47,13 +53,8 @@ def get_table_record(table_name,rowid):
     return data
 
 
-@app.route("/",methods=['GET','POST'])
-def home():
-    msg="Welcome!! You are in News Source Scraping Page!!"
-    return render_template("index1.html", msg=msg)
-
-
 #function for retrieving new source with present 0 - not started 
+
 @app.route("/get_source_not_started/<table_name>",methods=['GET','POST'])
 def get_source_not_started(table_name):
     msg="Welcome!! You are in News Source Scraping  Not Started Page!!"
@@ -144,13 +145,24 @@ def get_completed_sources(table_name):
     except:
         traceback.print_exc()
 
+#get source ( used in upload_file_to_db function )
 
-#upload final file to DB -Vishwajeets function
+def get_source(i):
+  try:
+    first = i.split("/")[2]
+    if first.startswith("www"):
+      return "".join(first.split(".")[1:-1])
+    else:
+      return "".join(first.split(".")[0:-1])
+  except:
+    return "#"
+
+#upload final file to DB 
 
 def upload_file_to_db(df):
 
         #df = pd.read_csv( file1)
-        #connect to DB
+        #connect to DB 
         conn =setup_connection()
         cursor = conn.cursor()
         err_rows = []
@@ -173,7 +185,7 @@ def upload_file_to_db(df):
                         i[1] = temp
                         i[2] = "20"+str(i[2])
                         row["publish_date"] = "-".join(i)
-
+                        
                     elif(len(re.findall(r'\d{4}-\d{1,2}-\d{1,2}',row["scraped_date"]))):
                         i = re.findall(r'\d{4}-\d{1,2}-\d{1,2}',row["scraped_date"])[0]
                         row["publish_date"] = i
@@ -189,7 +201,7 @@ def upload_file_to_db(df):
                 print("news_source",source)
 
 
-                #check in news_sourec table for the entry of this news_source , if it is not present , add the same
+                #check in news_sourec table for the entry of this news_source , if it is not present , add the same 
                 try:
                     sid = cursor.execute("select id from news_source where name = %s",(source,))
                     dta = cursor.fetchone()
@@ -209,12 +221,12 @@ def upload_file_to_db(df):
                 except:
                     traceback.print_exc()
                     print("source is not present in News_source table ")
-
-
+                    
+                    
 
                 data = [str(row["publish_date"]),str(row["scraped_date"]),str(row["title"]),
                 str(row["text"]),str(row["Companies"]),str(row["Country"]),str(row["link"]),str(row["Comments"]),str(row["update"]),sid]
-                #adding row into multilex table
+                #adding row into multilex table 
                 print("data",data)
                 try:
                     sql = "INSERT INTO multilex(publish_date,scraped_date,title,text,Companies,Country,link,Comments,Update_news,source_name) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
@@ -237,12 +249,15 @@ def upload_file_to_db(df):
         textfile.close()
         cursor.close()
         conn.commit()
+       
 
+# if matching IPO conpany record is present in Multilex table , update the xls with "update"   for the company
 def update_xls_if_company_exists_and_updatedb(filename):    
         try:
-
-            # if matching IPO company record is present in Multilex table , update the xls with "update"   for the company
             #read the data from PreIPO file 
+            #file1=app.config['UPLOAD_FOLDER']+filename
+
+            #print("file1", file1)
             df=pd.read_excel(filename)
             # remove blank space from left hand side of all columns
             df['Companies']=df['Companies'].str.strip()
@@ -276,16 +291,7 @@ def update_xls_if_company_exists_and_updatedb(filename):
             traceback.print_exc()
 
 
-#Vishwajeet's function 
-def get_source(i):
-  try:
-    first = i.split("/")[2]
-    if first.startswith("www"):
-      return "".join(first.split(".")[1:-1])
-    else:
-      return "".join(first.split(".")[0:-1])
-  except:
-    return "#"
+
 
 
 
@@ -298,35 +304,34 @@ def copy_file():
     except:
         traceback.print_exc()
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/copy1", methods=['GET','POST'])
 def copy1():
     try:
         if request.method == 'POST':
-       
+            
+            
+
             file = request.files.get('file')
             
-            # Requirement 1 :for each row of xls , read company name , if company name is present in multilex table , update the 'update'column in Sharika's xls as update 
-            #Requiremet 2 : upload xls data to DB 
-                # iterate through each row of xls
-                # get the news_source name by processing the 'link' column text
-                # check in news source table if teh news source which is taken from link of xls , is already present in the news_source table 
-                # if the news_source is present in teh news_source table , then get the id 
-                # if news_source is not present in the news_source table , , then insert this news_source and get the coreesponding id 
-                # after we get the id , we are insert the corresponding row of xls for that newssource in the multilex table using the above newsource id as foreign key
-                # the process is repeated for each row/record in Sharika's  xls 
+            
+            
+            
+            # if company name is present in multilex table , update the 'update'column in xls as update 
+            #update the newsource table with news source if it is not already present
             #also update each record of xls in multilex table with newsource id as foriegn key 
-           
             filename1=file.filename
             
-            #update_xls_if_company_exists_and_updatedb(filename1)
+            update_xls_if_company_exists_and_updatedb(filename1)
             
             
-            #Requirement 3 : update the final xls in AWS project directory under test sub folder 
             folder=os.getcwd()
 
             upload_folder= os.path.join(folder,'test')
-            #app.config['UPLOAD_FOLDER'] = upload_folder        
+            app.config['UPLOAD_FOLDER'] = upload_folder        
              
             file.save(os.path.join(upload_folder,filename1))
             print("File copy successful !!!")                
@@ -338,3 +343,5 @@ def copy1():
     except: 
         traceback.print_exc()
 
+    
+    
