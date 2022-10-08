@@ -6,6 +6,7 @@ import traceback
 from flask import request
 import os
 import time
+import logging
 
 
 app=Flask(__name__)
@@ -148,15 +149,18 @@ def get_completed_sources(table_name):
 
 #upload final file to DB -Vishwajeets function
 
-def upload_file_to_db(df):
+def upload_file_to_db(df,company):
 
-        #df = pd.read_csv( file1)
         #connect to DB 
         conn =setup_connection()
         cursor = conn.cursor()
         err_rows = []
         # read each rows of xls
+        df = df[df['Companies'].str.contains(company)]
+        print("df in tabke ",df)
         for i,row in df.iterrows():
+            #if company is not already updated in Multilex table 
+            
             try:
                 row["publish_date"] = str(row["publish_date"])
                 scraped_date=str(row["scraped_date"])
@@ -195,7 +199,7 @@ def upload_file_to_db(df):
                 try:
                     dta=None
                     sid=""
-                    cursor.execute("select id from news_source where name = %s",(source,))
+                    cursor.execute("select id from News_source where name = %s",(source,))
                     dta = cursor.fetchone()
                     print("inside select id ", str(dta))
                     if (dta !=None):
@@ -203,7 +207,7 @@ def upload_file_to_db(df):
                         print("sid exists in News_source table", sid)
                     elif (dta==None):
                         try:
-                            sql_insert="INSERT INTO news_source(name)  VALUES("+"'"+source +"')"
+                            sql_insert="INSERT INTO News_source(name)  VALUES("+"'"+source +"')"
                             print("sql_ins ......", sql_insert)
                             cursor.execute(sql_insert)
                             conn.commit()
@@ -214,7 +218,7 @@ def upload_file_to_db(df):
                         #print("source inserted in News_source table ")
                         try:
                             dta1=None
-                            cursor.execute("select id from news_source where name = %s",(source,))
+                            cursor.execute("select id from News_source where name = %s",(source,))
                             dta1 = cursor.fetchone()
                         
                             if( dta1 !=None):
@@ -233,7 +237,7 @@ def upload_file_to_db(df):
                 #adding row into multilex table 
                 print("data",data)
                 try:
-                    sql = "INSERT INTO multilex(publish_date,scraped_date,title,text,Companies,Country,link,Comments,Update_news,source_name) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                    sql = "INSERT INTO Multilex(publish_date,scraped_date,title,text,Companies,Country,link,Comments,Update_news,source_name) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
                     cursor.execute(sql,data)
                     print(" data inserted successfully in multilex table")
@@ -254,44 +258,47 @@ def upload_file_to_db(df):
         cursor.close()
         conn.commit()
 
-
 def update_xls_if_company_exists_and_updatedb(filename):    
-        try:
+    try:
+            #read the data from PreIPO file
+            #file1=app.config['UPLOAD_FOLDER']+filename
 
-            # if matching IPO company record is present in Multilex table , update the xls with "update"   for the company
-            #read the data from PreIPO file 
+            print("file1", filename)
             df=pd.read_excel(filename)
             # remove blank space from left hand side of all columns
             df['Companies']=df['Companies'].str.strip()
-            #print("df1 after removing space from lest",df)
+            #print("df1 after removing space from left",df)
             #get company list
             company_list=df['Companies'].tolist()
+            app.logger.info(company_list)
             print("company list",company_list)
             conn=setup_connection()
-            table_name="multilex"
+            table_name="Multilex"
             #itearte over compamny list and check for entry in multilex table for each company
             for company in company_list:
                 if (pd.isnull(company )== False):
-                    print("company",company)  
+                    print("company",company)
+                    app.logger.info(company)
                     company=company.lstrip()
                     cur=conn.cursor()
                     cur.execute(f"SELECT * FROM {table_name} WHERE Companies=%s",(company,))
                     data=cur.fetchone()
                     if data!= None:
                         #print("data",data)
+                        #is comany entry is already present in the multilex table , update xls with the word 'update'
                         df.loc[df.Companies==company,'update']="Update"
                         #print("updated")
                         df.to_excel(filename,index=False)
-            
-            # upload the file to DB 
-            upload_file_to_db(df)
-            
-            
+
+                    else:
+                        # upload the records  to DB  for which company entry is not present in the Multilex table
+                        upload_file_to_db(df,company)
+
+
             cur.close()
             conn.close()
-        except:
+    except:
             traceback.print_exc()
-
 
 #Vishwajeet's function 
 def get_source(i):
@@ -461,7 +468,7 @@ def copy1():
             sendmail(local_file)
 
             #upload xls content to multilex database 
-            update_xls_if_company_exists_and_updatedb(filename1)
+            update_xls_if_company_exists_and_updatedb(local_file)
 
             msg="file has been saved s3 bucket and multilex table has been updated successfully"
             return render_template("files_link_upload.html",msg=msg)
