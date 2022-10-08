@@ -7,6 +7,8 @@ from flask import request
 import os
 import time
 import logging
+from pathlib import Path
+from dotenv import load_dotenv
 
 
 app=Flask(__name__)
@@ -193,6 +195,9 @@ def upload_file_to_db(df,company):
                 # get the news source name from link column
                 source = str(get_source(row["link"]))
                 print("news_source",source)
+                app.logger.info("news source")
+                app.logger.info(source)
+
 
 
                 #check in news_sourec table for the entry of this news_source , if it is not present , add the same 
@@ -236,11 +241,14 @@ def upload_file_to_db(df,company):
                 str(row["text"]),str(row["Companies"]),str(row["Country"]),str(row["link"]),str(row["Comments"]),str(row["update"]),sid]
                 #adding row into multilex table 
                 print("data",data)
+                app.logger.info("data to be inserted in multilex table")
+                app.logger.info(data)
                 try:
                     sql = "INSERT INTO Multilex(publish_date,scraped_date,title,text,Companies,Country,link,Comments,Update_news,source_name) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
                     cursor.execute(sql,data)
                     print(" data inserted successfully in multilex table")
+                    app.logger.info("data inserted successfully in multilex table")
                 except:
                     print("inserting data in multilex table failed")
             except:
@@ -270,6 +278,7 @@ def update_xls_if_company_exists_and_updatedb(filename):
             #print("df1 after removing space from left",df)
             #get company list
             company_list=df['Companies'].tolist()
+            app.logger.info("company list")
             app.logger.info(company_list)
             print("company list",company_list)
             conn=setup_connection()
@@ -278,6 +287,7 @@ def update_xls_if_company_exists_and_updatedb(filename):
             for company in company_list:
                 if (pd.isnull(company )== False):
                     print("company",company)
+                    app.logger.info("company")
                     app.logger.info(company)
                     company=company.lstrip()
                     cur=conn.cursor()
@@ -389,12 +399,18 @@ def sendmail(filename):
 def s3bucketcopy(local_file,bucket_name,s3_file):
     import boto3
     from botocore.exceptions import NoCredentialsError
+
+    env_path = Path('.', '.env')
+    load_dotenv(dotenv_path=env_path)
+
+
     client = boto3.client(
     's3',
-    aws_access_key_id = 'AKIA3HV7VMUJO7JLHBOC',
-    aws_secret_access_key = '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',
-    region_name = 'ap-south-1'
+    aws_access_key_id = os.getenv('aws_access_key_id'),
+    aws_secret_access_key = os.getenv('aws_secret_access_key'),
+    region_name = os.getenv('region_name')
     )
+
     # Fetch the list of existing buckets
     clientResponse = client.list_buckets()
 
