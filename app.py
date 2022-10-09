@@ -53,8 +53,39 @@ def get_table_record(table_name,rowid):
 
 @app.route("/",methods=['GET','POST'])
 def home():
-    msg="Welcome!! You are in News Source Scraping Page!!"
+    msg="Welcome to PREIPO Management Portal!!"
     return render_template("index1.html", msg=msg)
+
+
+#function to add new News Source
+@app.route("/insert_into_table/<table_name>",methods=['GET','POST'])
+def insert_into_table(table_name):
+    msg="Welcome!! Please add the News Source details!!"
+
+    comment=None
+    if request.method=="GET":
+        return render_template("insert_new_record.html", msg=msg)
+
+    elif request.method == 'POST' and 'name1' in request.form and 'present' in request.form :
+        name1 = request.form['name1']
+        present = request.form['present']
+        comment=request.form['comment']
+        print("name1   ",name1)
+        print("present  ",present)
+        print("comment ",comment)
+        try:
+
+            conn = setup_connection()
+            print("connected")
+            cur = conn.cursor()
+            cur.execute('insert into News_source (name,present,comment) values (%s,%s,%s)',(name1,present,comment,))
+            cur.close()
+            conn.commit()
+            conn.close()
+            msg="Record has benn inserted successfully"
+            return render_template("insert_new_record.html", msg=msg)
+        except:
+            traceback.print_exc()
 
 
 #function for retrieving new source with present 0 - not started 
@@ -334,7 +365,7 @@ def copy_file():
 
 
 
-def sendmail(filename):
+def sendmail(filename,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text):
     import smtplib,ssl,email
     from email import encoders
     from email.mime.base import MIMEBase
@@ -344,14 +375,16 @@ def sendmail(filename):
     print("inside sendmail .....")
     print("filepath    .......", filename) 
     port=465
-    subject = "IPO file "
-    body = " please find final IPO file attached"
+
+    #subject = "IPO file "
+    body=mail_text
+    #body = " please find final IPO file attached"
     smtp_server="smtp.gmail.com"
-    sender_email="Multilex123@gmail.com"
-    receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+    #sender_email="Multilex123@gmail.com"
+    #receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
 
     #receiver_email="suparna.gurunaga@gmail.com"
-    recv_mail_bcc="shashank.gurunaga@gmail.com"
+    #recv_mail_bcc="shashank.gurunaga@gmail.com"
     password="koknaikeqibharxi"
     
     
@@ -360,7 +393,7 @@ def sendmail(filename):
     message["From"] = sender_email
     #message["To"] = receiver_email
     message['To'] = str(", ".join(receiver_email))
-    message["Subject"] = subject
+    message["Subject"] = mail_subject
     message["Bcc"] = recv_mail_bcc  
 
     # Add body to email
@@ -396,10 +429,12 @@ def sendmail(filename):
     print("end of sendmail ")
 
 
+#function to upload to s3 bucket 
 def s3bucketcopy(local_file,bucket_name,s3_file):
     import boto3
     from botocore.exceptions import NoCredentialsError
 
+    # read  s3 bucket connection data from .env file 
     env_path = Path('.', '.env')
     load_dotenv(dotenv_path=env_path)
 
@@ -440,23 +475,12 @@ def copy1():
        
             file = request.files.get('file')
             
-            # Requirement 1 :for each row of xls , read company name , if company name is present in multilex table , update the 'update'column in Sharika's xls as "update" 
-            #Requiremet 2 : upload xls data to DB 
-                # iterate through each row of xls
-                # get the news_source name by processing the 'link' column text - using existing module ( get_spurce function)
-                # check in news source table if teh news source which is taken from link of xls , is already present in the news_source table 
-                # if the news_source is present in teh news_source table , then get the id 
-                # if news_source is not present in the news_source table , , then insert this news_source and get the coreesponding id 
-                # after we get the id , we are insert the corresponding row of xls for that newssource in the multilex table using the above newsource id as foreign key
-                # the process is repeated for each row/record in Sharika's  xls 
-            #also update each record of xls in multilex table with newsource id as foriegn key 
-           
+            # get file name selected by user .eg a.xls 
             filename1=file.filename
             
-            #update_xls_if_company_exists_and_updatedb(filename1)
             
             
-            #Requirement 3 : update the final xls in AWS project directory under test sub folder 
+            # update the final cleaned  xls in AWS project directory under test sub folder 
             folder=os.getcwd()
 
             upload_folder= os.path.join(folder,'test')
@@ -465,11 +489,12 @@ def copy1():
             file.save(os.path.join(upload_folder,filename1))
             print("File copy successful !!!")                
   
-            #copy file to S3 bucket
+            #copy file to S3 bucket from test directory 
             # if copy to S3 bucket is successful , remobve it from the project directory
             local_file =os.path.join(upload_folder, filename1)
 
             print("local file ", local_file) 
+
 
             bucket_name="shashankmultilex"
             s3_file=filename1
@@ -480,8 +505,28 @@ def copy1():
 
             #send mail
             #filename_path=os.path.join(upload_folder,filename1)
-            #sendmail(filename_path)
-            sendmail(local_file)
+            sender_email="Multilex123@gmail.com"
+            receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+
+            #receiver_email="suparna.gurunaga@gmail.com"
+            recv_mail_bcc="shashank.gurunaga@gmail.com"
+            mail_subject="Today's Final , cleaned PREIPO is report attached and also uploaded to s3 bucket "
+            mail_text="Today's final , cleaned PREIPO is report attached and also uploaded to s3 bucket"
+
+            sendmail(local_file,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
+
+
+
+             # Requirement 1 :for each row of xls , read company name , if company name is present in multilex table , update the 'update'column in Sharika's xls as "update"
+            #Requiremet 2 : upload xls data to DB
+                # iterate through each row of xls
+                # get the news_source name by processing the 'link' column text - using existing module ( get_spurce function)
+                # check in news source table if teh news source which is taken from link of xls , is already present in the news_source table
+                # if the news_source is present in teh news_source table , then get the id
+                # if news_source is not present in the news_source table , , then insert this news_source and get the coreesponding id
+                # after we get the id , we are insert the corresponding row of xls for that newssource in the multilex table using the above newsource id as foreign key
+                # the process is repeated for each row/record in Sharika's  xls
+            #also update each record of xls in multilex table with newsource id as foriegn key
 
             #upload xls content to multilex database 
             update_xls_if_company_exists_and_updatedb(local_file)
@@ -490,5 +535,67 @@ def copy1():
             return render_template("files_link_upload.html",msg=msg)
 
     except: 
+        traceback.print_exc()
+
+
+
+@app.route("/copy_file_ipo",methods=['GET','POST'])
+def copy_file_ipo():
+    try:
+        print("inside.....")
+        msg="Select the file to Upload"
+        return render_template("upload_daily_preipo.html",msg=msg)
+    except:
+        traceback.print_exc()
+
+
+@app.route("/copy1_ipo", methods=['GET','POST'])
+def copy1_ipo():
+    try:
+        if request.method == 'POST':
+
+            file = request.files.get('file')
+
+            # get file name selected by user .eg a.xls 
+            filename1=file.filename
+
+
+
+            # update the final cleaned  xls in AWS project directory under test sub folder 
+            folder=os.getcwd()
+
+            upload_folder= os.path.join(folder,'test')
+
+            file.save(os.path.join(upload_folder,filename1))
+            print("File copy successful !!!")
+  
+            #copy file to S3 bucket from test directory 
+            # if copy to S3 bucket is successful , remobve it from the project directory
+            local_file =os.path.join(upload_folder, filename1)
+
+            print("local file ", local_file)
+
+
+            bucket_name="preipofilestore"
+            s3_file=filename1
+
+            s3bucketcopy(local_file, bucket_name, s3_file)
+
+             #send mail
+            receiver_email = ['sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com','maheshpanwar351@gmail.com']
+            sender_email="Multilex123@gmail.com"
+            #receiver_email = ['gurunaga@gmail.com', 'suparna.gurunaga@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+
+            recv_mail_bcc="shashank.gurunaga@gmail.com"
+
+            mail_subject="Today's PREIPO is report attached for cleaning and also uploaded to s3 bucket"
+            mail_text="Today's PREIPO is report attached for cleaning and also uploaded to s3 bucket"
+
+            sendmail(local_file,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
+
+            msg="file has been saved s3 bucket and mail has been sent "
+            return render_template("upload_daily_preipo.html",msg=msg)
+
+    except:
         traceback.print_exc()
 

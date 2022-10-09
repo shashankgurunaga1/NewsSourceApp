@@ -12,8 +12,7 @@
 
                     <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">Completed News Sources</a></li>
                     <li><a href="{{url_for('copy_file')}}">Upload Final Cleaned File</a></li>
-                    <li><a href="{{url_for('copy_file_ipo')}}">Upload Intial_IPO File_Not_Cleaned</a></li>
-
+		    <li><a href="{{url_for('copy_file_ipo')}}">Upload Intial_IPO File_Not_Cleaned</a></li>
                 </ul> 
             </div>
             <div class="content" align="center">
@@ -21,15 +20,15 @@
                     <h2>{{msg}} </h2>                        
                 </div>  </br>
                 <div class="contentbar">
-                    <form action="{{ url_for('copy1')}}" method="post" autocomplete="off" enctype="multipart/form-data" >
-                        <label ><b>Choose the final cleaned xls to upload :</b></label>
+                    <form action="{{ url_for('copy1_ipo')}}" method="post" autocomplete="off" enctype="multipart/form-data" >
+                        <label ><b>Choose the file  to upload:</b></label>
                         <br>
                         <br>
                         <input type="file" placeholder="Choose folder" id="file"  name="file" required/><br><br>
                         
                         <br>
                         
-                        <button name="submit" onclick="copy1()">Upload FIle</button>
+                        <button name="submit" onclick="copy1_ipo()">Upload FIle</button>
                     </form>
                 </div>
             </div>
