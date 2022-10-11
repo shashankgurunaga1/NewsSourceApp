@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block head %}<h1>News Source Management Portal</h1>
+<style>
+  td {
+    position: relative;
+    text-align: center;
+    border: 2px solid green;
+    padding: 0;
+    margin: 0;
+}
+</style>
+
+{% endblock %}
+
+{% block body %}
+<div class="one">
+    <div class="two">
+        <h2>Available Options</h2>
+        <ul>
+		<li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source In Progress</a></li>
+                    <li class="active"><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source Not Started</a></li>
+                    <li><a href="{{url_for('insert_into_table',table_name='News_source')}}">Add News Source</a></li>
+                    <li><a href="{{url_for('get_completed_sources',table_name='News_source')}}">Completed News Sources</a></li>
+                    <li><a href="{{url_for('copy_file')}}">Upload Final Cleaned File to S3 bucket</a></li>
+                    <li><a href="{{url_for('copy_file_ipo')}}">Upload Intial_IPO File_Not_Cleaned to S3 bucket</a></li>
+		    <li><a href="{{url_for('storage')}}"> Download Uncleaned IPO file from S3 buckete</a></li>
+        </ul> 
+    </div>
+    <div class="content" align="center">
+
+        <div class="topbar">
+            <h2> Download Uncleaned file from s3 bucket </h2>
+                     
+        </div>  </br>
+        <div class="contentbar">
+
+        <br>
+        <br>
+        <!-- Output 1 -->
+        <table>
+          <tr style="color:white; 
+                background-color:black;">
+            <th>File name </th>
+            <th>Button for Download </th>
+            </tr>
+            
+            {% for item in contents %}
+            <tr>
+              <form action="{{ url_for('download_file',file_name=item)}}" method="post" autocomplete="off">
+
+              <td>
+                {{ item }}
+	      </td>
+              <td>
+                <button name="submit" onclick="download_fle(item)">Download file</button>
+
+              </td>
+            </form>
+            </tr>
+            {% endfor %}
+            </table>
+        <br>
+        <br>
+    </div>
+</div>
+
+
+{% endblock %}
+

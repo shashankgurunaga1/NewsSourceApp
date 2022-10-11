@@ -12,10 +12,10 @@
                     <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source In Progress</a></li>
                     <li class="active"><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source Not Started</a></li>
                     <li><a href="{{url_for('insert_into_table',table_name='News_source')}}">Add News Source</a></li>
-
-                    <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">Completed News Sources</a></li>
-		    <li><a href="{{url_for('copy_file')}}">Upload Final Cleaned File</a></li>
-                    <li><a href="{{url_for('copy_file_ipo')}}">Upload Intial_IPO File_Not_Cleaned</a></li>
+                     <li><a href="{{url_for('get_completed_sources',table_name='News_source')}}">Completed News Sources</a></li>
+		    <li><a href="{{url_for('copy_file')}}">Upload Final Cleaned File to S3 bucket</a></li>
+                    <li><a href="{{url_for('copy_file_ipo')}}">Upload Intial_IPO File_Not_Cleaned to S3 bucket</a></li>
+		    <li><a href="{{url_for('storage')}}"> Download Uncleaned IPO file from S3 buckete</a></li>
 
                 </ul> 
             </div>

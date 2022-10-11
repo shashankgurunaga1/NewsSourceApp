@@ -9,6 +9,7 @@ import time
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
+import boto3
 
 
 app=Flask(__name__)
@@ -599,3 +600,73 @@ def copy1_ipo():
     except:
         traceback.print_exc()
 
+#list files of 3s3 bucket
+def list_files(bucket):
+
+
+    session = boto3.Session(
+            aws_access_key_id='AKIA3HV7VMUJO7JLHBOC',
+            aws_secret_access_key='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',
+            region_name='ap-south-1')
+
+
+    #Then use the session to get the resource
+    s3 = session.resource('s3')
+
+    my_bucket = s3.Bucket(bucket)
+    contents = []
+
+    for my_bucket_object in my_bucket.objects.all():
+        #print(my_bucket_object.key)
+        contents.append(my_bucket_object.key)
+    #print("content ",contents)
+    return contents
+
+
+@app.route("/storage")
+def storage():
+    contents = list_files("preipofilestore")
+
+    return render_template('storage.html', contents=contents)
+
+@app.route("/download_file/<file_name>", methods=['GET', 'POST'])
+
+def download_file(file_name):
+    if request.method == 'POST'   :
+        bucket="preipofilestore"
+       
+        # read  s3 bucket connection data from .env file 
+        env_path = Path('.', '.env')
+        load_dotenv(dotenv_path=env_path)
+
+
+
+        client = boto3.client(
+        's3',
+        aws_access_key_id = os.getenv('aws_access_key_id'),
+        aws_secret_access_key = os.getenv('aws_secret_access_key'),
+        region_name = os.getenv('region_name')
+        )
+        
+        # get current server directory
+        folder=os.getcwd()
+
+        download_folder= os.path.join(folder,'test')
+        output1= os.path.join(download_folder,file_name)
+
+        # download from s3 bucket to test folder in project directory
+        client.download_file(Bucket=bucket,Key=file_name,Filename=output1) 
+        
+        # download as attachment in browser  
+        from flask import send_file
+        return send_file(output1,as_attachment=True)
+
+
+@app.route("/download_f", methods=['GET', 'POST'])
+
+def download_f():
+    from flask import send_file
+    p="PREIPO_Final_Report_2022-10-08.csv"
+    return send_file(p,as_attachment=True)
+
+    
