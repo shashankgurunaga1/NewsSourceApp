@@ -5,10 +5,51 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/style.css">
+    {% block head %}<h1>News Source  IPO Management Portal</h1>{% endblock %}
 
-    {% block head %}{% endblock %}
 </head>
 <body bgcolor="#e6ffee">
-    {% block body %}{% endblock %}
+    <div class="one">
+        <div class="two">
+	    <h2>Available Options</h2>
+        	<ul>
+                <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source In Progress</a></li>
+                    <li class="active"><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source Not Started</a></li>
+                    <li><a href="{{url_for('insert_into_table',table_name='News_source')}}">Add News Source</a></li>
+                    <li><a href="{{url_for('get_completed_sources',table_name='News_source')}}">Completed News Sources</a></li>
+                    <li><a href="{{url_for('copy_file')}}">Upload Final Cleaned File to S3 bucket</a></li>
+                    <li><a href="{{url_for('copy_file_ipo')}}">Upload  Uncleaned Initial IPO File to S3 bucket</a></li>
+                    <li><a href="{{url_for('storage')}}"> Download Uncleaned IPO file from S3 bucket</a></li>
+		    <li><a href="{{url_for('copy_file_ipo_first')}}"> Upload Cleaned IPO filefor validation to S3 bucket</a></li>
+		    <li><a href="{{url_for('validate_file_ipo_first')}}"> Validate File</a></li>
+        </ul>
+        </div>
+        <div class="content" align="center">
+        
+            <div class="topbar">
+               <h2> {% block topbar %}{% endblock %} </h2> 
+
+            </div>  </br>
+            <div class="contentbar">
+            <div id="content">
+                {% block content %}{% endblock %}
+            </div>  
+            <br>
+            <br>
+            </div>
+        </div>
+    </div>
+
+    <div class="message" align="center">
+                 <p>{% block message %}{% endblock %} </p>                        
+
+    <div id="footer">
+        {% block footer %}
+        &copy;  For any query, Please contact  <a href="shashankgurunaga@gmail.com">Shashank G</a>.
+        {% endblock %}
+      </div>
 </body>
 </html>
+
+
+

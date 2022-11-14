@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block head %}<h1>News Source IPO  Management Portal</h1>
+<style>
+  td {
+    position: relative;
+    text-align: center;
+    border: 2px solid green;
+    padding: 0;
+    margin: 0;
+}   
+</style>
+        
+{% endblock %}  
+
+{% block topbar %}Validate File {% endblock %}
+                    
+{% block content %}
+        <table>
+          <tr style="color:white; 
+                background-color:black;">
+            <th>File name </th>
+            <th> Validate  File </th>
+            </tr>
+              
+            {% for item in contents %}
+            <tr>
+              <form action="{{ url_for('validate_file',file_name=item)}}" method="post" autocomplete="off">
+              
+              <td>
+                {{ item }}
+              </td>
+              <td>
+                <button name="submit" onclick="validate_fle(item)">Validate file</button>
+
+              </td>
+            </form>
+            </tr>
+            {% endfor %}
+            </table>
+        <br>
+        <br>
+{% endblock %}  
+
+
+{% block message %} {{msg}} {% endblock %}

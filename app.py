@@ -1,4 +1,5 @@
-from flask import Flask,render_template,request,url_for
+from flask import Flask
+from flask import render_template,request,url_for
 from datetime import datetime
 import pymysql
 import pymysql.cursors
@@ -10,11 +11,14 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 import boto3
+import logging
+import pandas as pd
 
 
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '123'
 
+logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 
 @app.errorhandler(404)
@@ -83,7 +87,7 @@ def insert_into_table(table_name):
             cur.close()
             conn.commit()
             conn.close()
-            msg="Record has benn inserted successfully"
+            msg="Record has been inserted successfully"
             return render_template("insert_new_record.html", msg=msg)
         except:
             traceback.print_exc()
@@ -359,7 +363,7 @@ def get_source(i):
 def copy_file():
     try:
         print("inside.....")
-        msg="Select the file to Upload"
+        msg="Select the file to Upload to s3 bucket  under folder Partiallycleanedipofile "
         return render_template("files_link_upload.html",msg=msg)
     except:
         traceback.print_exc()
@@ -373,8 +377,8 @@ def sendmail(filename,sender_email,receiver_email,recv_mail_bcc,mail_subject,mai
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
     
-    print("inside sendmail .....")
-    print("filepath    .......", filename) 
+    app.logger.info("inside sendmail .....")
+    app.logger.info("filepath    .......", filename) 
     port=465
 
     #subject = "IPO file "
@@ -427,7 +431,7 @@ def sendmail(filename,sender_email,receiver_email,recv_mail_bcc,mail_subject,mai
         server.login(sender_email, password)
         server.sendmail(sender_email, receiver_email, text)
 
-    print("end of sendmail ")
+    app.logger.info("end of sendmail ")
 
 
 #function to upload to s3 bucket 
@@ -451,9 +455,9 @@ def s3bucketcopy(local_file,bucket_name,s3_file):
     clientResponse = client.list_buckets()
 
     # Print the bucket names one by one
-    print('Printing bucket names...')
+    app.logger.info('Printing bucket names...')
     for bucket in clientResponse['Buckets']:
-        print(f'Bucket Name: {bucket["Name"]}')
+        app.logger.info(f'Bucket Name: {bucket["Name"]}')
        
 
    
@@ -488,17 +492,17 @@ def copy1():
             #app.config['UPLOAD_FOLDER'] = upload_folder        
              
             file.save(os.path.join(upload_folder,filename1))
-            print("File copy successful !!!")                
+            app.logger.info("File copy successful !!!")                
   
             #copy file to S3 bucket from test directory 
             # if copy to S3 bucket is successful , remobve it from the project directory
             local_file =os.path.join(upload_folder, filename1)
 
-            print("local file ", local_file) 
+            app.logger.info("local file ", local_file) 
 
 
-            bucket_name="shashankmultilex"
-            s3_file=filename1
+            bucket_name="multilex"
+            s3_file="Partiallycleanedipofile/"+filename1
 
             s3bucketcopy(local_file, bucket_name, s3_file)
 
@@ -543,8 +547,7 @@ def copy1():
 @app.route("/copy_file_ipo",methods=['GET','POST'])
 def copy_file_ipo():
     try:
-        print("inside.....")
-        msg="Select the file to Upload"
+        msg="Select the file to Upload in S3 bucket  under Uncleanedipofile folder"
         return render_template("upload_daily_preipo.html",msg=msg)
     except:
         traceback.print_exc()
@@ -568,17 +571,20 @@ def copy1_ipo():
             upload_folder= os.path.join(folder,'test')
 
             file.save(os.path.join(upload_folder,filename1))
-            print("File copy successful !!!")
+            app.logger.info("File copy successful !!!")
   
             #copy file to S3 bucket from test directory 
             # if copy to S3 bucket is successful , remobve it from the project directory
             local_file =os.path.join(upload_folder, filename1)
 
-            print("local file ", local_file)
+            app.logger.info("local file ", local_file)
 
 
-            bucket_name="preipofilestore"
-            s3_file=filename1
+            bucket_name="multilex"
+            s3_file="Uncleanedipofile/"+filename1
+
+
+
 
             s3bucketcopy(local_file, bucket_name, s3_file)
 
@@ -601,31 +607,38 @@ def copy1_ipo():
         traceback.print_exc()
 
 #list files of 3s3 bucket
-def list_files(bucket):
+def list_files(bucket,prefix):
+
+     # read  s3 bucket connection data from .env file 
+    env_path = Path('.', '.env')
+    load_dotenv(dotenv_path=env_path)
 
 
-    session = boto3.Session(
-            aws_access_key_id='AKIA3HV7VMUJO7JLHBOC',
-            aws_secret_access_key='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',
-            region_name='ap-south-1')
+    client = boto3.client(
+        's3',
+        aws_access_key_id = os.getenv('aws_access_key_id'),
+        aws_secret_access_key = os.getenv('aws_secret_access_key'),
+        region_name = os.getenv('region_name')
+        )
 
 
-    #Then use the session to get the resource
-    s3 = session.resource('s3')
-
-    my_bucket = s3.Bucket(bucket)
+    response = client.list_objects_v2(
+        Bucket=bucket,
+        Prefix=prefix)
+    
     contents = []
-
-    for my_bucket_object in my_bucket.objects.all():
-        #print(my_bucket_object.key)
-        contents.append(my_bucket_object.key)
-    #print("content ",contents)
+    for content in response.get('Contents', []):
+        # 	it comes in form of Uncleanedipofile/PREIPO_Final_Report_2022-10-20.csv
+        list1=[]
+        list1=content['Key'].split("/")
+        if len(list1[1]) != 0:
+            contents.append(list1[1])
     return contents
 
 
 @app.route("/storage")
 def storage():
-    contents = list_files("preipofilestore")
+    contents = list_files("multilex","Uncleanedipofile/")
 
     return render_template('storage.html', contents=contents)
 
@@ -633,7 +646,7 @@ def storage():
 
 def download_file(file_name):
     if request.method == 'POST'   :
-        bucket="preipofilestore"
+        bucket="multilex"
        
         # read  s3 bucket connection data from .env file 
         env_path = Path('.', '.env')
@@ -655,18 +668,177 @@ def download_file(file_name):
         output1= os.path.join(download_folder,file_name)
 
         # download from s3 bucket to test folder in project directory
-        client.download_file(Bucket=bucket,Key=file_name,Filename=output1) 
+
+        file_name1="Uncleanedipofile/"+file_name
+        client.download_file(Bucket=bucket,Key=file_name1,Filename=output1) 
         
         # download as attachment in browser  
         from flask import send_file
         return send_file(output1,as_attachment=True)
 
 
-@app.route("/download_f", methods=['GET', 'POST'])
 
-def download_f():
-    from flask import send_file
-    p="PREIPO_Final_Report_2022-10-08.csv"
-    return send_file(p,as_attachment=True)
+@app.route("/copy_file_ipo_first",methods=['GET','POST'])
+def copy_file_ipo_first():
+    try:
+        app.logger.info("inside.....")
+        msg="Select the file to Upload in S3 bucket under Firstcleanedipofile folder to validate"
+        return render_template("first_cleaned_report.html",msg=msg)
+    except:
+        traceback.print_exc()
 
+
+@app.route("/copy1_ipo_first", methods=['GET','POST'])
+def copy1_ipo_first():
+    try:
+        if request.method == 'POST':
+
+            file = request.files.get('file')
+
+            # get file name selected by user .eg a.xls 
+            filename1=file.filename
+
+            # update the final cleaned  xls in AWS project directory under test sub folder 
+            folder=os.getcwd()
+
+            upload_folder= os.path.join(folder,'test')
+
+            file.save(os.path.join(upload_folder,filename1))
+            app.logger.info("File copy successful !!!")
+            local_file =os.path.join(upload_folder, filename1)
+            app.logger.info("local file ", local_file)
+
+            bucket_name="multilex"
+            s3_file="Firstcleanedipofile/"+filename1
+
+
+            s3bucketcopy(local_file, bucket_name, s3_file)
+            msg="file has been saved s3 bucket  "
+            return render_template("first_cleaned_report.html",msg=msg)
+
+    except:
+        traceback.print_exc()
+
+
+def check_for_companyname_in_multilex(company_name1):
+    conn =setup_connection()
+    cursor = conn.cursor()
+    try:
+                    dta=None
+                    cursor.execute("select companies from Multilex where companies = %s",(company_name1,))
+                    dta = cursor.fetchone()
+                    app.logger.info("inside select company ", str(dta))
+                    if (dta !=None):
+                        company1 =dta['companies']
+                        app.logger.info("company exists in Multilex table", company1)
+                        return company1
+                    return None
+
+    except:
+         app.logger.info("select company from multilex table is not done properly")
+
+
+@app.route("/validate_file_ipo_first",methods=['GET','POST'])
+def validate_file_ipo_first():
+    #display the list of files
+    contents = list_files("multilex","Firstcleanedipofile/")
+
+    return render_template('storage_validate.html', contents=contents)
+
+    #there should be only one file in th firstipo folder in s3 bucket . once it is processed , it should move to second  folder in S3 bucket 
+    # aspart of thevalidation - read the xls and then compare each row with multilex table company name , if matches delete the row
+    #after delete, update the final xls
+
+
+@app.route("/validate_file/<file_name>", methods=['GET', 'POST'])
+def validate_file(file_name):
+    import io
+    from io import BytesIO
+    
+
+    if request.method == 'POST'   :
+        bucket="multilex"
+
+        # read  s3 bucket connection data from .env file
+        env_path = Path('.', '.env')
+        load_dotenv(dotenv_path=env_path)
+
+
+
+        client = boto3.client(
+        's3',
+        aws_access_key_id = os.getenv('aws_access_key_id'),
+        aws_secret_access_key = os.getenv('aws_secret_access_key'),
+        region_name = os.getenv('region_name')
+        )
+
+        # get current server directory
+        folder=os.getcwd()
+        app.logger.info('folder info %s',folder)
+
+        # get file to validate from s3 bucket
+        file_name1="Firstcleanedipofile/"+file_name
+        try:
+            obj= client.get_object(Bucket=bucket,Key=file_name1)
+            # read teh file  in panda dataframe
+            df_1 = pd.read_excel(io.BytesIO(obj['Body'].read()))
+            app.logger.info('df initial info %s',df_1)
+            #df_3=pd.DataFrame()
+            #df_3=df_1
+            # list to hold the index to drop 
+            lst_index = [] 
+
+            for i in range(len(df_1)):
+                #read comany name 
+                company_name1=df_1.loc[i, "Issuer Name"]
+                print(company_name1)
+                #function to match with database  for the company name and get the company name from database table 
+                company1=check_for_companyname_in_multilex(company_name1)
+                # if company name exists in database 
+                if (company1 != None) :
+                    # srtip the leading and trailing space
+                    company1=company1.strip()
+                    # get the database company name to lower case to compare with dafarame company name value 
+                    company1=str(company1).lower()
+                    # get the df company name to lower case
+                    company_df=df_1['Issuer Name'][i]
+                    company_df=str(company_df).lower()
+                    app.logger.info( "company1", company1)
+
+                    app.logger.info("company_df", company_df)
+                    # compare databse company name with dataframe company name 
+                    if ( company1== company_df):
+                        # if they match , put the index value in lst_index
+                        lst_index.append(i)
+                        app.logger.info("lst_index",lst_index)
+            # drop the corresponding rows from th edataframe with matching company name in multilex       
+            app.logger.info("lst_index_final", lst_index)
+            df_1.drop(index=lst_index, inplace = True)
+            app.logger.info( "final df_1", df_1['Issuer Name'])
+            #save the dataframe after dropping rows to excel and upload to s3 bucket subfolder secondcleanedipofile 
+            bucket_name="multilex"
+            s3_file="Secondcleanedipofile/"+file_name
+            df_1.to_excel(file_name)
+
+            s3bucketcopy(file_name, bucket_name, s3_file)
+
+
+            # remove the file from firstcleanedreport folder in s3 bucket
+            client.delete_object(Bucket=bucket_name, Key=file_name1)            
+            app.logger.info('delete file from s3 bucket is done')
+
+            #delete the xls from project folder which was created by dataframe to_excel method
+            os.remove(file_name)
+
+            #display message 
+            msg="Processed file has been saved s3 bucket undeer Secondcleanedipofile folder"
+            return render_template("storage_validate.html",msg=msg)
+
+        except Exception as e:
+            print(e)
+
+
+    
+
+    
     
