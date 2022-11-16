@@ -44,15 +44,13 @@ def get_table_record(table_name,rowid):
     conn = setup_connection()
     row12=rowid[0]
     row22=rowid[1]
-    #print("row12 ", row12)
-    #print("row22" , row22)
     cur = conn.cursor()
     cur.execute(f"SELECT * FROM {table_name} where id in (%s,%s)", (row12,row22))
     data = cur.fetchall()
 
     cur.close()
     conn.close()
-    print(data)
+    app.logger.info(data)
     return data
 
 
@@ -75,13 +73,13 @@ def insert_into_table(table_name):
         name1 = request.form['name1']
         present = request.form['present']
         comment=request.form['comment']
-        print("name1   ",name1)
-        print("present  ",present)
-        print("comment ",comment)
+        app.logger.info("name1   ",name1)
+        app.logger.info("present  ",present)
+        app.logger.info("comment ",comment)
         try:
 
             conn = setup_connection()
-            print("connected")
+            app.logger.info("connected")
             cur = conn.cursor()
             cur.execute('insert into News_source (name,present,comment) values (%s,%s,%s)',(name1,present,comment,))
             cur.close()
@@ -99,7 +97,7 @@ def get_source_not_started(table_name):
     msg="Here are two Randomly chosen News source which are not scraped yet !!"
     try:
         conn = setup_connection()
-        print("connected")
+        app.logger.info("connected")
         cur = conn.cursor()
         cur.execute(f"SELECT * FROM {table_name} where present=0  ORDER BY RAND ( ) LIMIT 2")
         data = cur.fetchall()
@@ -117,7 +115,7 @@ def get_source_in_progress(table_name):
 
     try:
         conn = setup_connection()
-        print("connected")
+        app.logger.info("connected")
         cur = conn.cursor()
         cur.execute(f"SELECT * FROM {table_name} where present=1")
         data = cur.fetchall()
@@ -138,12 +136,12 @@ def update_table(table_name):
             present=request.form.getlist('present[]')
             comment=request.form.getlist('comment[]')
             rowid=request.form.getlist('rowid[]')
-            print(rowid)
+            app.logger.info(rowid)
             table_name='News_source'
 
             conn = setup_connection()
 
-            print("connected update")
+            app.logger.info("connected update")
             
             for i in range (2):
                 present1=present[i]
@@ -174,7 +172,7 @@ def get_completed_sources(table_name):
     msg="You are viewing the report for News Sources fow which scraping is completed"
     try:
         conn=setup_connection()
-        print("Connected")
+        app.logger.info("Connected")
         cur=conn.cursor()
         cur.execute(f"SELECT * FROM {table_name} WHERE present=2")
         data=cur.fetchall()
@@ -195,7 +193,7 @@ def upload_file_to_db(df,company):
         err_rows = []
         # read each rows of xls
         df = df[df['Companies'].str.contains(company)]
-        print("df in tabke ",df)
+        app.logger.info("df in table ",df)
         for i,row in df.iterrows():
             #if company is not already updated in Multilex table 
             
@@ -230,7 +228,7 @@ def upload_file_to_db(df,company):
                 #print("row", row)
                 # get the news source name from link column
                 source = str(get_source(row["link"]))
-                print("news_source",source)
+                app.logger.info("news_source",source)
                 app.logger.info("news source")
                 app.logger.info(source)
 
@@ -242,19 +240,19 @@ def upload_file_to_db(df,company):
                     sid=""
                     cursor.execute("select id from News_source where name = %s",(source,))
                     dta = cursor.fetchone()
-                    print("inside select id ", str(dta))
+                    app.logger.info("inside select id ", str(dta))
                     if (dta !=None):
                         sid =dta['id']
-                        print("sid exists in News_source table", sid)
+                        app.logger.info("sid exists in News_source table", sid)
                     elif (dta==None):
                         try:
                             sql_insert="INSERT INTO News_source(name)  VALUES("+"'"+source +"')"
-                            print("sql_ins ......", sql_insert)
+                            app.logger.info("sql_ins ......", sql_insert)
                             cursor.execute(sql_insert)
                             conn.commit()
                             time.sleep(3)
                         except:
-                            print("sql insert in news_source failed")
+                            app.logger.info("sql insert in news_source failed")
                         #cursor.execute("INSERT INTO news_source(name) VALUES(%s)",(source,))
                         #print("source inserted in News_source table ")
                         try:
@@ -264,39 +262,39 @@ def upload_file_to_db(df,company):
                         
                             if( dta1 !=None):
                                 sid =dta1['id']
-                                print("news source is now inserted in news_source table", sid)
+                                app.logger.info("news source is now inserted in news_source table", sid)
                         except:
-                            print("insert into News_source is not done properly")
+                            app.logger.info("insert into News_source is not done properly")
                 except:
                     traceback.print_exc()
-                    print("source is not present in News_source table ")
+                    app.logger.info("source is not present in News_source table ")
                     
                     
 
                 data = [str(row["publish_date"]),str(row["scraped_date"]),str(row["title"]),
                 str(row["text"]),str(row["Companies"]),str(row["Country"]),str(row["link"]),str(row["Comments"]),str(row["update"]),sid]
                 #adding row into multilex table 
-                print("data",data)
+                app.logger.info("data",data)
                 app.logger.info("data to be inserted in multilex table")
                 app.logger.info(data)
                 try:
                     sql = "INSERT INTO Multilex(publish_date,scraped_date,title,text,Companies,Country,link,Comments,Update_news,source_name) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
                     cursor.execute(sql,data)
-                    print(" data inserted successfully in multilex table")
+                    app.logger.info(" data inserted successfully in multilex table")
                     app.logger.info("data inserted successfully in multilex table")
                 except:
-                    print("inserting data in multilex table failed")
+                    app.logger.info("inserting data in multilex table failed")
             except:
                 err_rows.append(str(i) + " " + str(row["publish_date"]) + "  " + str(row["Companies"]))
-                print("inside except")
+                app.logger.info("inside except")
         textfile = open("error_rows.txt","a")
         for val,i in enumerate(err_rows):
             try:
                 textfile.write(str(i))
                 textfile.write("\n")
             except:
-                print(val)
+                app.logger.info(val)
         # print(err_rows)
         textfile.close()
         cursor.close()
@@ -307,7 +305,7 @@ def update_xls_if_company_exists_and_updatedb(filename):
             #read the data from PreIPO file
             #file1=app.config['UPLOAD_FOLDER']+filename
 
-            print("file1", filename)
+            app.logger.info("file1", filename)
             df=pd.read_excel(filename)
             # remove blank space from left hand side of all columns
             df['Companies']=df['Companies'].str.strip()
@@ -316,13 +314,13 @@ def update_xls_if_company_exists_and_updatedb(filename):
             company_list=df['Companies'].tolist()
             app.logger.info("company list")
             app.logger.info(company_list)
-            print("company list",company_list)
+            app.logger.info("company list",company_list)
             conn=setup_connection()
             table_name="Multilex"
             #itearte over compamny list and check for entry in multilex table for each company
             for company in company_list:
                 if (pd.isnull(company )== False):
-                    print("company",company)
+                    app.logger.info("company",company)
                     app.logger.info("company")
                     app.logger.info(company)
                     company=company.lstrip()
@@ -362,7 +360,7 @@ def get_source(i):
 @app.route("/copy_file",methods=['GET','POST'])
 def copy_file():
     try:
-        print("inside.....")
+        app.logger.info("inside.....")
         msg="Select the file to Upload to s3 bucket  under folder Partiallycleanedipofile "
         return render_template("files_link_upload.html",msg=msg)
     except:
@@ -463,13 +461,13 @@ def s3bucketcopy(local_file,bucket_name,s3_file):
    
     try:
         client.upload_file(local_file, bucket_name, s3_file)
-        print("Upload Successful")
+        app.logger.info("Upload Successful")
         return True
     except FileNotFoundError:
-        print("The file was not found")
+        app.logger.info("The file was not found")
         return False
     except NoCredentialsError:
-        print("Credentials not available")
+        app.logger.info("Credentials not available")
         return False
   
 
@@ -713,7 +711,7 @@ def copy1_ipo_first():
 
 
             s3bucketcopy(local_file, bucket_name, s3_file)
-            msg="file has been saved s3 bucket  "
+            msg="File has been uploaded to  s3 bucket for validation "
             return render_template("first_cleaned_report.html",msg=msg)
 
     except:
@@ -785,36 +783,41 @@ def validate_file(file_name):
             app.logger.info('df initial info %s',df_1)
             #df_3=pd.DataFrame()
             #df_3=df_1
-            # list to hold the index to drop 
+            # list to hold the indexes to drop 
             lst_index = [] 
 
+            #for each row in xls 
             for i in range(len(df_1)):
-                #read comany name 
-                company_name1=df_1.loc[i, "Issuer Name"]
-                print(company_name1)
-                #function to match with database  for the company name and get the company name from database table 
-                company1=check_for_companyname_in_multilex(company_name1)
-                # if company name exists in database 
-                if (company1 != None) :
-                    # srtip the leading and trailing space
-                    company1=company1.strip()
-                    # get the database company name to lower case to compare with dafarame company name value 
-                    company1=str(company1).lower()
-                    # get the df company name to lower case
-                    company_df=df_1['Issuer Name'][i]
-                    company_df=str(company_df).lower()
-                    app.logger.info( "company1", company1)
+                if (df_1.loc[i, "update"] != 'Update'):
+                    #read comany name 
+                    #company_name1=df_1.loc[i, "Issuer Name"]
+                    company_name1=df_1.loc[i, "Companies"]
+                    app.logger.info(company_name1)
+                    #function to match with database  for the company name and get the company name from database table 
+                    company1=check_for_companyname_in_multilex(company_name1)
+                    # if company name exists in database 
+                    if (company1 != None) :
+                        # srtip the leading and trailing space
+                        company1=company1.strip()
+                        # get the database company name to lower case to compare with dafarame company name value 
+                        company1=str(company1).lower()
+                        # get the df company name to lower case
+                        company_df=df_1['Companies'][i]
+                        #company_df=df_1['Issuer Name'][i]
+                        company_df=str(company_df).lower()
+                        app.logger.info( "company1", company1)
 
-                    app.logger.info("company_df", company_df)
-                    # compare databse company name with dataframe company name 
-                    if ( company1== company_df):
-                        # if they match , put the index value in lst_index
-                        lst_index.append(i)
-                        app.logger.info("lst_index",lst_index)
+                        app.logger.info("company_df", company_df)
+                        # compare databse company name with dataframe company name 
+                        if ( company1== company_df):
+                            # if they match , put the index value in lst_index
+                            lst_index.append(i)
+                            app.logger.info("lst_index",lst_index)
             # drop the corresponding rows from th edataframe with matching company name in multilex       
             app.logger.info("lst_index_final", lst_index)
             df_1.drop(index=lst_index, inplace = True)
-            app.logger.info( "final df_1", df_1['Issuer Name'])
+            app.logger.info( "final df_1", df_1['Companies'])
+            #app.logger.info( "final df_1", df_1['Issuer Name'])
             #save the dataframe after dropping rows to excel and upload to s3 bucket subfolder secondcleanedipofile 
             bucket_name="multilex"
             s3_file="Secondcleanedipofile/"+file_name
@@ -835,10 +838,47 @@ def validate_file(file_name):
             return render_template("storage_validate.html",msg=msg)
 
         except Exception as e:
-            print(e)
+            app.logger.info(e)
 
 
     
+@app.route("/storage_validated")
+def storage_validated():
+    contents = list_files("multilex","Secondcleanedipofile/")
 
+    return render_template('storage_validated.html', contents=contents)
     
-    
+
+@app.route("/download_file_validated/<file_name>", methods=['GET', 'POST'])
+
+def download_file_validated(file_name):
+    if request.method == 'POST'   :
+        bucket="multilex"
+
+        # read  s3 bucket connection data from .env file 
+        env_path = Path('.', '.env')
+        load_dotenv(dotenv_path=env_path)
+
+
+
+        client = boto3.client(
+        's3',
+        aws_access_key_id = os.getenv('aws_access_key_id'),
+        aws_secret_access_key = os.getenv('aws_secret_access_key'),
+        region_name = os.getenv('region_name')
+        )
+
+        # get current server directory
+        folder=os.getcwd()
+
+        download_folder= os.path.join(folder,'test')
+        output1= os.path.join(download_folder,file_name)
+
+        # download from s3 bucket to test folder in project directory
+
+        file_name1="Secondcleanedipofile/"+file_name
+        client.download_file(Bucket=bucket,Key=file_name1,Filename=output1)
+
+        # download as attachment in browser  
+        from flask import send_file
+        return send_file(output1,as_attachment=True)    

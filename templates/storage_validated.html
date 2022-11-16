@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+            
+{% block topbar %} Download Validated  IPO file from S3 bucket {% endblock %}
+        <!-- Output 1 -->
+	{% block content %}
+        <table>
+          <tr style="color:white; 
+                background-color:black;">
+            <th>File name </th>
+            <th> Download Validated  File </th>
+            </tr>
+            
+            {% for item in contents %}
+            <tr>
+              <form action="{{ url_for('download_file_validated',file_name=item)}}" method="post" autocomplete="off">
+
+              <td>
+                {{ item }}
+	      </td>
+              <td>
+                <button name="submit" onclick="download_file_validated(item)">Download Validated file</button>
+
+              </td>
+            </form>
+            </tr>
+            {% endfor %}
+            </table>
+        <br>
+        <br>
+
+
+{% endblock %}
+

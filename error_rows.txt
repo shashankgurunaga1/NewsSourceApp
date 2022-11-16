@@ -1,0 +1,6 @@
+1 2022-11-15 00:00:00  JD.Com
+4 2022-11-15 00:00:00  TT Vision Holdings Bhd
+5 2022-11-15 00:00:00  Growatt Technology
+6 2022-11-15 00:00:00  Multi Medika Internasional
+7 2022-11-15 00:00:00  ITF Group
+8 Date  Medicube
