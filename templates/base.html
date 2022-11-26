@@ -33,15 +33,18 @@
 		     <fieldset>
 	            <legend>Validate File with Database</legend>
 		    <li><a href="{{url_for('copy_file_ipo_first')}}">A. Upload Cleaned IPO file to S3 bucket for Validation with DB</a></li>
-		    <li><a href="{{url_for('validate_file_ipo_first')}}">B. Validate File</a></li>
-		    <li><a href="{{url_for('storage_validated')}}">C.Download Validated File</a></li>
+		    <li><a href="{{url_for('validate_file_ipo_first')}}">B. Validate File, upload final file to S3 bucket and send mail </a></li>
+		    <li><a href="{{url_for('upload_xls_to_db')}}">C. Upload final XLS to DB </a></li>
+		    <li><a href="{{url_for('storage_validated')}}">D.Download Validated File</a></li>
 		    </fieldset>
 
-		    
-		    <fieldset>
+
+	            <fieldset>
                     <legend>Upload Final  File to S3 bucket</legend>
-                    <li><a href="{{url_for('copy_file')}}">Upload Final Cleaned File to S3 bucket</a></li>
-		    </fieldset>
+                    <li><a href="{{url_for('upload_final_ipo_file')}}">Upload Final Cleaned File to S3 bucket</a></li>
+                    </fieldset>
+
+		    
         
 	</ul>
         </div>

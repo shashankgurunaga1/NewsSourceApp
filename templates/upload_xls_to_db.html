@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+            
+{% block topbar %} Upload Validated  IPO file to Database {% endblock %}
+        <!-- Output 1 -->
+	{% block content %}
+        <table>
+          <tr style="color:white; 
+                background-color:black;">
+            <th>File name </th>
+            <th> Upload  Validated  File to DB</th>
+            </tr>
+            
+            {% for item in contents %}
+            <tr>
+              <form action="{{ url_for('upload_xls_to_db_backend',file_name=item)}}" method="post" autocomplete="off">
+
+              <td>
+                {{ item }}
+	      </td>
+              <td>
+                <button name="submit" onclick="upload_xls_to_db_backend(item)">Upload Validated file to DB</button>
+
+              </td>
+            </form>
+            </tr>
+            {% endfor %}
+            </table>
+        <br>
+        <br>
+
+
+{% endblock %}
+

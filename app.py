@@ -29,15 +29,26 @@ def page_not_found(error):
          
 # function for setting DB cvonnection 
 def setup_connection():
-    user = 'admin'
-    DB_PASSWORD = 'HeyMultilex9087'
-    DB_PORT = 3306
-    passw = DB_PASSWORD
-    host =  'multilex-db.csgyi8splofr.ap-south-1.rds.amazonaws.com'
-    port = DB_PORT
-    database = 'preipo'
-    conn = pymysql.connect(host=host,port=port,user=user,passwd=passw,db=database,cursorclass = pymysql.cursors.DictCursor)
-    return conn
+    try:
+        user = 'admin'
+        DB_PASSWORD = 'HeyMultilex12345'
+        #DB_PASSWORD = 'HeyMultilex9087'
+        DB_PORT = 3307
+        passw = DB_PASSWORD
+        host='multilex-tech.cvk1q8ffpz2u.ap-south-1.rds.amazonaws.com'
+        port = DB_PORT
+        database = 'preipo'
+        #database='multilex-tech'
+        app.logger.info("inside setupconnection object")
+        conn = pymysql.connect(host=host,port=port,user=user,passwd=passw,db=database,cursorclass = pymysql.cursors.DictCursor)
+        app.logger.info('database  connected')
+
+        return conn
+    except:
+        traceback.print_exc()
+        app.logger.info('database not  connected')
+        return None
+
 
 #function for getting table record 
 def get_table_record(table_name,rowid):
@@ -79,14 +90,18 @@ def insert_into_table(table_name):
         try:
 
             conn = setup_connection()
-            app.logger.info("connected")
-            cur = conn.cursor()
-            cur.execute('insert into News_source (name,present,comment) values (%s,%s,%s)',(name1,present,comment,))
-            cur.close()
-            conn.commit()
-            conn.close()
-            msg="Record has been inserted successfully"
-            return render_template("insert_new_record.html", msg=msg)
+            if (conn ==None):
+                 msg="databse connection is not successful!!"
+                 return render_template("index1.html", msg=msg)
+            elif (conn !=None):
+                app.logger.info("connected")
+                cur = conn.cursor()
+                cur.execute('insert into News_source (name,present,comment) values (%s,%s,%s)',(name1,present,comment,))
+                cur.close()
+                conn.commit()
+                conn.close()
+                msg="Record has been inserted successfully"
+                return render_template("insert_new_record.html", msg=msg)
         except:
             traceback.print_exc()
 
@@ -97,13 +112,18 @@ def get_source_not_started(table_name):
     msg="Here are two Randomly chosen News source which are not scraped yet !!"
     try:
         conn = setup_connection()
-        app.logger.info("connected")
-        cur = conn.cursor()
-        cur.execute(f"SELECT * FROM {table_name} where present=0  ORDER BY RAND ( ) LIMIT 2")
-        data = cur.fetchall()
-        cur.close()
-        conn.close()
-        return render_template("index.html", data = data,msg=msg)
+        if (conn ==None):
+             msg="databse connection is not successful!!"
+             return render_template("index1.html", msg=msg)
+        elif (conn !=None):
+            app.logger.info("connected")
+            cur = conn.cursor()
+            #cur.execute(f"SELECT * FROM {table_name} where present=0  ORDER BY RAND ( ) LIMIT 2")
+            cur.execute(f"SELECT * FROM News_source where present=0  ORDER BY RAND ( ) LIMIT 2")
+            data = cur.fetchall()
+            cur.close()
+            conn.close()
+            return render_template("index.html", data = data,msg=msg)
     except:
         traceback.print_exc()
         
@@ -115,13 +135,17 @@ def get_source_in_progress(table_name):
 
     try:
         conn = setup_connection()
-        app.logger.info("connected")
-        cur = conn.cursor()
-        cur.execute(f"SELECT * FROM {table_name} where present=1")
-        data = cur.fetchall()
-        cur.close()
-        conn.close()
-        return render_template("in_progress.html", data = data,msg=msg)
+        if (conn ==None):
+                 msg="databse connection is not successful!!"
+                 return render_template("index1.html", msg=msg)
+        elif (conn !=None):
+                app.logger.info("connected")
+                cur = conn.cursor()
+                cur.execute(f"SELECT * FROM {table_name} where present=1")
+                data = cur.fetchall()
+                cur.close()
+                conn.close()
+                return render_template("in_progress.html", data = data,msg=msg)
     except:
         traceback.print_exc()
         
@@ -140,21 +164,25 @@ def update_table(table_name):
             table_name='News_source'
 
             conn = setup_connection()
+            if (conn ==None):
+                 msg="databse connection is not successful!!"
+                 return render_template("index1.html", msg=msg)
+            elif (conn !=None):
 
-            app.logger.info("connected update")
+                app.logger.info("connected update")
             
-            for i in range (2):
-                present1=present[i]
-                row1=rowid[i]
-                comment1=comment[i] or None
-                cursor=conn.cursor()
-                cursor.execute("UPDATE News_source SET present=%s,comment=%s WHERE id=%s" , (present1, comment1,row1))
-                conn.commit()
-                cursor.close()
+                for i in range (2):
+                    present1=present[i]
+                    row1=rowid[i]
+                    comment1=comment[i] or None
+                    cursor=conn.cursor()
+                    cursor.execute("UPDATE News_source SET present=%s,comment=%s WHERE id=%s" , (present1, comment1,row1))
+                    conn.commit()
+                    cursor.close()
                 
-            conn.close()
-            msg1="You have successfully updated the records!"
-            msg=msg1  
+                conn.close()
+                msg1="You have successfully updated the records!"
+                msg=msg1  
                                    
         except:
             traceback.print_exc()
@@ -172,65 +200,62 @@ def get_completed_sources(table_name):
     msg="You are viewing the report for News Sources fow which scraping is completed"
     try:
         conn=setup_connection()
-        app.logger.info("Connected")
-        cur=conn.cursor()
-        cur.execute(f"SELECT * FROM {table_name} WHERE present=2")
-        data=cur.fetchall()
-        cur.close()
-        conn.close()
-        return render_template("get_completed_news_sources.html",data=data,msg=msg)
+        if (conn ==None):
+            msg="databse connection is not successful!!"
+            return render_template("index1.html", msg=msg)
+        elif (conn !=None):
+            app.logger.info("Connected to database")
+            cur=conn.cursor()
+            cur.execute(f"SELECT * FROM {table_name} WHERE present=2")
+
+            data=cur.fetchall()
+            app.logger.info("data from database",data)
+            cur.close()
+            conn.close()
+            return render_template("get_completed_news_sources.html",data=data,msg=msg)
     except:
         traceback.print_exc()
 
 
 #upload final file to DB -Vishwajeets function
 
-def upload_file_to_db(df,company):
-
-        #connect to DB 
-        conn =setup_connection()
-        cursor = conn.cursor()
+def upload_file_to_db(df31):
+        msg1=""
         err_rows = []
-        # read each rows of xls
-        df = df[df['Companies'].str.contains(company)]
-        app.logger.info("df in table ",df)
-        for i,row in df.iterrows():
-            #if company is not already updated in Multilex table 
+        app.logger.info("I am inside upload_db fucntion")
+        df3=df31.copy()
+        if len(df3) == 0:
+            app.logger.info("empty dataframe")
+        else : 
+            app.logger.info("length of dataframe", len(df3))
+
+        app.logger.info("upload_file_db df in table ",df3)
+
+
+        conn =setup_connection()
+
+
+        if (conn ==None):
+                 msg1="databse connection is not successful!!"
+                 return render_template("index1.html", msg=msg1)
+
+
+        for i,row in df3.iterrows():
             
-            try:
-                row["publish_date"] = str(row["publish_date"])
-                scraped_date=str(row["scraped_date"])
+            
 
                 if(len(str(row["text"]))>5000):
                     row["text"] = row["text"][0:5000]
                 if(len(str(row["Companies"]))>100):
                     row["Companies"] = row["Companies"][0:100]
                 
-                if(str(row["publish_date"]) )== scraped_date:
-                    if(len(re.findall(r'\d{1,2}/\d{1,2}/\d{4}',row["scraped_date"]))):
-                        i = re.findall(r'\d{1,2}/\d{1,2}/\d{4}',row["scraped_date"])[0]
-                        i = i.split("/")
-                        temp = i[0]
-                        i[0] = i[1]
-                        i[1] = temp
-                        i[2] = "20"+str(i[2])
-                        row["publish_date"] = "-".join(i)
-                        
-                    elif(len(re.findall(r'\d{4}-\d{1,2}-\d{1,2}',row["scraped_date"]))):
-                        i = re.findall(r'\d{4}-\d{1,2}-\d{1,2}',row["scraped_date"])[0]
-                        row["publish_date"] = i
-                if(len(re.findall(r'\d{1,2}-\d{1,2}-\d{4}',row["publish_date"]))):
-                        i = re.findall(r'\d{1,2}-\d{1,2}-\d{4}',row["publish_date"])[0]
-                        i = "-".join(i.split("-")[::-1])
-                        row["publish_date"] = i
-                
 
-                #print("row", row)
+
+                #ADD DATA IN NEWSOURCE TABLE IF NEWS_SOURCE IS NOT PRESENT IN DB 
+
                 # get the news source name from link column
                 source = str(get_source(row["link"]))
                 app.logger.info("news_source",source)
-                app.logger.info("news source")
-                app.logger.info(source)
 
 
 
@@ -238,38 +263,47 @@ def upload_file_to_db(df,company):
                 try:
                     dta=None
                     sid=""
+                    cursor = conn.cursor()
                     cursor.execute("select id from News_source where name = %s",(source,))
                     dta = cursor.fetchone()
-                    app.logger.info("inside select id ", str(dta))
                     if (dta !=None):
                         sid =dta['id']
+                        app.logger.info("sid is present in news_source table")
                         app.logger.info("sid exists in News_source table", sid)
                     elif (dta==None):
                         try:
+                            app.logger.info("sid is not present in news_source table and should be be added ")
                             sql_insert="INSERT INTO News_source(name)  VALUES("+"'"+source +"')"
-                            app.logger.info("sql_ins ......", sql_insert)
+                            app.logger.info("sql_insert into News_source table is successful", sql_insert)
                             cursor.execute(sql_insert)
+                            
                             conn.commit()
+                            app.logger.info("sql_insert into News_source table is successful")
+
                             time.sleep(3)
                         except:
                             app.logger.info("sql insert in news_source failed")
-                        #cursor.execute("INSERT INTO news_source(name) VALUES(%s)",(source,))
-                        #print("source inserted in News_source table ")
+                        
                         try:
                             dta1=None
+                            #get the sid post inserting to news_source table 
                             cursor.execute("select id from News_source where name = %s",(source,))
                             dta1 = cursor.fetchone()
                         
                             if( dta1 !=None):
                                 sid =dta1['id']
-                                app.logger.info("news source is now inserted in news_source table", sid)
+                                app.logger.info("news source id from the newly inserted record in news_source table", sid)
                         except:
                             app.logger.info("insert into News_source is not done properly")
                 except:
                     traceback.print_exc()
-                    app.logger.info("source is not present in News_source table ")
+                    app.logger.info("source query in News_source table failed")
+
+                finally:
+                    cursor.close()
                     
-                    
+                 
+                #Add Data in Multilex table 
 
                 data = [str(row["publish_date"]),str(row["scraped_date"]),str(row["title"]),
                 str(row["text"]),str(row["Companies"]),str(row["Country"]),str(row["link"]),str(row["Comments"]),str(row["update"]),sid]
@@ -278,27 +312,20 @@ def upload_file_to_db(df,company):
                 app.logger.info("data to be inserted in multilex table")
                 app.logger.info(data)
                 try:
+                    cursor = conn.cursor()
                     sql = "INSERT INTO Multilex(publish_date,scraped_date,title,text,Companies,Country,link,Comments,Update_news,source_name) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
                     cursor.execute(sql,data)
-                    app.logger.info(" data inserted successfully in multilex table")
+                    conn.commit()
+                    cursor.close()
+                    msg1=" Selected Final file has been uploaded to database "
                     app.logger.info("data inserted successfully in multilex table")
                 except:
                     app.logger.info("inserting data in multilex table failed")
-            except:
-                err_rows.append(str(i) + " " + str(row["publish_date"]) + "  " + str(row["Companies"]))
-                app.logger.info("inside except")
-        textfile = open("error_rows.txt","a")
-        for val,i in enumerate(err_rows):
-            try:
-                textfile.write(str(i))
-                textfile.write("\n")
-            except:
-                app.logger.info(val)
-        # print(err_rows)
-        textfile.close()
-        cursor.close()
-        conn.commit()
+        
+        # close db connection
+        conn.close()
+        return msg1
 
 def update_xls_if_company_exists_and_updatedb(filename):    
     try:
@@ -316,31 +343,35 @@ def update_xls_if_company_exists_and_updatedb(filename):
             app.logger.info(company_list)
             app.logger.info("company list",company_list)
             conn=setup_connection()
-            table_name="Multilex"
-            #itearte over compamny list and check for entry in multilex table for each company
-            for company in company_list:
-                if (pd.isnull(company )== False):
-                    app.logger.info("company",company)
-                    app.logger.info("company")
-                    app.logger.info(company)
-                    company=company.lstrip()
-                    cur=conn.cursor()
-                    cur.execute(f"SELECT * FROM {table_name} WHERE Companies=%s",(company,))
-                    data=cur.fetchone()
-                    if data!= None:
-                        #print("data",data)
-                        #is comany entry is already present in the multilex table , update xls with the word 'update'
-                        df.loc[df.Companies==company,'update']="Update"
-                        #print("updated")
-                        df.to_excel(filename,index=False)
+            if (conn ==None):
+                 msg="databse connection is not successful!!"
+                 return render_template("index1.html", msg=msg)
+            elif (conn !=None):
+                table_name="Multilex"
+                #itearte over compamny list and check for entry in multilex table for each company
+                for company in company_list:
+                    if (pd.isnull(company )== False):
+                        app.logger.info("company",company)
+                        app.logger.info("company")
+                        app.logger.info(company)
+                        company=company.lstrip()
+                        cur=conn.cursor()
+                        cur.execute(f"SELECT * FROM {table_name} WHERE Companies=%s",(company,))
+                        data=cur.fetchone()
+                        if data!= None:
+                            #print("data",data)
+                            #is comany entry is already present in the multilex table , update xls with the word 'update'
+                            df.loc[df.Companies==company,'update']="Update"
+                            #print("updated")
+                            df.to_excel(filename,index=False)
 
-                    else:
-                        # upload the records  to DB  for which company entry is not present in the Multilex table
-                        upload_file_to_db(df,company)
+                        else:
+                            print("uplaod db is commented ")
+                            # upload the records  to DB  for which company entry is not present in the Multilex table
 
 
-            cur.close()
-            conn.close()
+                cur.close()
+                conn.close()
     except:
             traceback.print_exc()
 
@@ -720,8 +751,12 @@ def copy1_ipo_first():
 
 def check_for_companyname_in_multilex(company_name1):
     conn =setup_connection()
-    cursor = conn.cursor()
-    try:
+    if (conn ==None):
+                 msg="databse connection is not successful!!"
+                 return render_template("index1.html", msg=msg)
+    elif (conn !=None):
+        cursor = conn.cursor()
+        try:
                     dta=None
                     cursor.execute("select companies from Multilex where companies = %s",(company_name1,))
                     dta = cursor.fetchone()
@@ -732,8 +767,8 @@ def check_for_companyname_in_multilex(company_name1):
                         return company1
                     return None
 
-    except:
-         app.logger.info("select company from multilex table is not done properly")
+        except:
+             app.logger.info("select company from multilex table is not done properly")
 
 
 @app.route("/validate_file_ipo_first",methods=['GET','POST'])
@@ -822,16 +857,25 @@ def validate_file(file_name):
             bucket_name="multilex"
             s3_file="Secondcleanedipofile/"+file_name
             df_1.to_excel(file_name)
-
+            # copy the final file to Secondcleanedipofile folder in s3 bucket
             s3bucketcopy(file_name, bucket_name, s3_file)
 
+            sender_email="Multilex123@gmail.com"
+            receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+
+            recv_mail_bcc="shashank.gurunaga@gmail.com"
+            mail_subject="Today's Final , cleaned,validated PREIPO is report attached and also uploaded to s3 bucket "
+            mail_text="Today's final , cleaned PREIPO is report attached and it is also uploaded to s3 bucket under Secondcleanedipofile sub folder"
+
+            sendmail(file_name,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
 
             # remove the file from firstcleanedreport folder in s3 bucket
-            client.delete_object(Bucket=bucket_name, Key=file_name1)            
+            client.delete_object(Bucket=bucket_name, Key=file_name1)
             app.logger.info('delete file from s3 bucket is done')
 
             #delete the xls from project folder which was created by dataframe to_excel method
             os.remove(file_name)
+
 
             #display message 
             msg="Processed file has been saved s3 bucket undeer Secondcleanedipofile folder"
@@ -840,6 +884,64 @@ def validate_file(file_name):
         except Exception as e:
             app.logger.info(e)
 
+
+# upload final file to databse 
+
+@app.route("/upload_xls_to_db")
+def upload_xls_to_db():
+    contents = list_files("multilex","Secondcleanedipofile/")
+
+    return render_template('upload_xls_to_db.html', contents=contents)
+
+@app.route("/upload_xls_to_db_backend/<file_name>", methods=['GET', 'POST'])
+def upload_xls_to_db_backend(file_name):
+    import io
+    from io import BytesIO
+
+
+    if request.method == 'POST'   :
+        bucket="multilex"
+
+        # read  s3 bucket connection data from .env file
+        env_path = Path('.', '.env')
+        load_dotenv(dotenv_path=env_path)
+
+
+
+        client = boto3.client(
+        's3',
+        aws_access_key_id = os.getenv('aws_access_key_id'),
+        aws_secret_access_key = os.getenv('aws_secret_access_key'),
+        region_name = os.getenv('region_name')
+        )
+
+        # get current server directory
+        folder=os.getcwd()
+        app.logger.info('folder info %s',folder)
+
+        # get file to upload from s3 bucket
+        file_name1="Secondcleanedipofile/"+file_name
+        try:
+            obj= client.get_object(Bucket=bucket,Key=file_name1)
+            # read teh file  in panda dataframe
+            df_1 = pd.read_excel(io.BytesIO(obj['Body'].read()))
+            app.logger.info('df initial info before upload  %s',df_1)
+
+
+            #upload to DB 
+            msg=upload_file_to_db(df_1)
+
+            #display message
+            #msg=" Selected Final file has been uploaded to database "
+            return render_template("confirmation.html",msg=msg)
+
+        except Exception as e:
+            app.logger.info(e)
+
+
+    
+
+# Download final file from S3 bucket 
 
     
 @app.route("/storage_validated")
@@ -882,3 +984,55 @@ def download_file_validated(file_name):
         # download as attachment in browser  
         from flask import send_file
         return send_file(output1,as_attachment=True)    
+
+
+
+@app.route("/upload_final_ipo_file",methods=['GET','POST'])
+def upload_final_ipo_file():
+    try:
+        app.logger.info("inside.....")
+        msg="Select the file to Upload to s3 bucket  under folder Partiallycleanedipofile "
+        return render_template("final_files_link_upload.html",msg=msg)
+    except:
+        traceback.print_exc()
+
+@app.route("/final_copy1", methods=['GET','POST'])
+def final_copy1():
+    try:
+        if request.method == 'POST':
+
+            file = request.files.get('file')
+
+            # get file name selected by user .eg a.xls 
+            filename1=file.filename
+
+
+
+            # update the final cleaned  xls in AWS project directory under test sub folder 
+            folder=os.getcwd()
+
+            upload_folder= os.path.join(folder,'test')
+            #app.config['UPLOAD_FOLDER'] = upload_folder        
+
+            file.save(os.path.join(upload_folder,filename1))
+            app.logger.info("File copy successful !!!")
+
+            #copy file to S3 bucket from test directory 
+            # if copy to S3 bucket is successful , remobve it from the project directory
+            local_file =os.path.join(upload_folder, filename1)
+
+            app.logger.info("local file ", local_file)
+
+
+            bucket_name="multilex"
+            s3_file="Secondcleanedipofile/"+filename1
+
+            s3bucketcopy(local_file, bucket_name, s3_file)
+            #display message
+            msg=" Selected Final file has been uploaded to database "
+            return render_template("confirmation.html",msg=msg)
+    except Exception as e:
+            app.logger.info(e)
+
+
+

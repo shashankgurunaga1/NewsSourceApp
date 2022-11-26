@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block topbar %} {{msg}} {% endblock %}
+                    
+{% block content %}
+
+<form action="{{ url_for('final_copy1')}}" method="post" autocomplete="off" enctype="multipart/form-data" >
+                        <label ><b>Choose the final cleaned xls to upload :</b></label>
+                        <br>
+                        <br>
+                        <input type="file" placeholder="Choose folder" id="file"  name="file" required/><br><br>
+                        
+                        <br>
+                        
+                        <button name="submit" onclick="final_copy1()">Upload FIle</button>
+                    </form>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <div>
+		    <p><i>*** Along with uploading file to S3 bucket , it will also send mail to the stakeholders and update the records in database</i></p>
+		    </div>
+
+{% endblock %}
+ 

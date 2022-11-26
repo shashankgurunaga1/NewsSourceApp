@@ -1,6 +1,110 @@
+0 2022-11-15 00:00:00  Sai Silks (Kalamandir) Limited
 1 2022-11-15 00:00:00  JD.Com
+2 2022-11-15 00:00:00  Power REIT Corp. (PREIT)
+3 2022-11-15 00:00:00  i-Tail Crop (ITC)
 4 2022-11-15 00:00:00  TT Vision Holdings Bhd
 5 2022-11-15 00:00:00  Growatt Technology
 6 2022-11-15 00:00:00  Multi Medika Internasional
 7 2022-11-15 00:00:00  ITF Group
 8 Date  Medicube
+0 2022-11-15 00:00:00  Sai Silks (Kalamandir) Limited
+1 2022-11-15 00:00:00  JD.Com
+2 2022-11-15 00:00:00  Power REIT Corp. (PREIT)
+3 2022-11-15 00:00:00  i-Tail Crop (ITC)
+4 2022-11-15 00:00:00  TT Vision Holdings Bhd
+5 2022-11-15 00:00:00  Growatt Technology
+6 2022-11-15 00:00:00  Multi Medika Internasional
+7 2022-11-15 00:00:00  ITF Group
+8 Date  Medicube
+0 2022-11-15 00:00:00  Sai Silks (Kalamandir) Limited
+1 2022-11-15 00:00:00  JD.Com
+2 2022-11-15 00:00:00  Power REIT Corp. (PREIT)
+3 2022-11-15 00:00:00  i-Tail Crop (ITC)
+4 2022-11-15 00:00:00  TT Vision Holdings Bhd
+5 2022-11-15 00:00:00  Growatt Technology
+6 2022-11-15 00:00:00  Multi Medika Internasional
+7 2022-11-15 00:00:00  ITF Group
+8 Date  Medicube
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+0 2022-11-24 00:00:00  DHARMAJ CROP GUARD LIMITED
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+1 2022-11-24 00:00:00  UNIPARTS INDIA LIMITED
+2 2022-11-24 00:00:00  Fogo Hospitality, Inc.
+3 2022-11-24 00:00:00  Global Mofy Metaverse Ltd.
+4 2022-11-24 00:00:00  Pang Pang Xiang
+5 2022-11-24 00:00:00  Sino-Synergy Hydrogen Energy Technology
+6 2022-11-24 00:00:00  Uniparts India LIMITED
+7 2022-11-24 00:00:00  Saudi Aramco Base Oil Co.
+8 2022-11-24 00:00:00  Foxhog Ventures
+1 2022-11-23 00:00:00  Premiere REIT
+2 2022-11-23 00:00:00  Haldiram 
+3 2022-11-23 00:00:00  Dharmaj Crop Guard
+4 2022-11-23 00:00:00  Allied Blenders and Distillers (ABD) 
+5 2022-11-23 00:00:00  Cape EMS Bhd
+6 2022-11-23 00:00:00  Adani Enterprises
+1 2022-11-23 00:00:00  Premiere REIT
+2 2022-11-23 00:00:00  Haldiram 
+3 2022-11-23 00:00:00  Dharmaj Crop Guard
+4 2022-11-23 00:00:00  Allied Blenders and Distillers (ABD) 
+5 2022-11-23 00:00:00  Cape EMS Bhd
+6 2022-11-23 00:00:00  Adani Enterprises
