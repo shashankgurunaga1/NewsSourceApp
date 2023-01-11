@@ -1168,25 +1168,3 @@ def file_process_further():
     except Exception as e:
             app.logger.info(e)
 
-
-
-@app.route("/get_multilex_data/<table_name>",methods=['GET','POST'])
-def get_multilex_data(table_name):
-    msg="Welcome!! You are viewing IPO report from Multilex table !!"
-
-    try:
-        conn = setup_connection()
-        if (conn ==None):
-                 msg="databse connection is not successful!!"
-                 return render_template("index1.html", msg=msg)
-        elif (conn !=None):
-                app.logger.info("connected")
-                cur = conn.cursor()
-                cur.execute(f"SELECT * FROM {table_name} order by publish_date desc ")
-                data = cur.fetchall()
-                cur.close()
-                conn.close()
-                return render_template("multilex_data.html", data = data,msg=msg)
-    except:
-        traceback.print_exc()
-

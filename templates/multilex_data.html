@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block topbar %} {{msg}}{% endblock %}
+{% block content %}
+
+        <form action="{{ url_for('get_multilex_data',table_name='Multilex')}}" method="post" autocomplete="off">
+        <br>
+        <br>
+        <table>
+        <thead>
+            <th>Publish Date</th>
+            <th>Companies</th>
+            <th>Country </th>
+
+        </thead>
+        <tbody>
+        {% for row in data  %}  
+        <tr> 
+                <td>
+                        {{row.publish_date}} 
+                </td>    
+                <td>
+                    {{ row.Companies }} 
+                </td> 
+                <td>{{ row.Country }} 
+                </td> 
+
+            
+        </tr> 
+        {% endfor %} 
+        </tbody>
+
+        </table>
+        <br>
+        <br>
+        </form>
+
+
+{% endblock %}
+

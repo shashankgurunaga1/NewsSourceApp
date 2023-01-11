@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../static/style.css">
-    {% block head %}<h1>News Source  IPO Management Portal</h1>{% endblock %}
+    {% block head %}<h1>Multilex IPO Management Portal</h1>{% endblock %}
 
 </head>
 <body bgcolor="#e6ffee">
@@ -15,15 +15,23 @@
         	<ul>
 
 	         <fieldset>
-                    <legend>New Source</legend>
-                    <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source In Progress</a></li>
-                    <li><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source Not Started</a></li>
-                    <li><a href="{{url_for('insert_into_table',table_name='News_source')}}">Add News Source</a></li>
-                    <li><a href="{{url_for('get_completed_sources',table_name='News_source')}}">Completed News Sources</a></li>
+                    <legend>New Source Scraping Status</legend>
+                    <li><a href="{{url_for('get_source_in_progress',table_name='News_source')}}">News Source -Scraping In Progress</a></li>
+                    <li><a href="{{url_for('get_source_not_started',table_name='News_source')}}">News Source- Scraping Not Started</a></li>
+                    <li><a href="{{url_for('insert_into_table',table_name='News_source')}}">Add News Source to Scrape</a></li>
+                    <li><a href="{{url_for('get_completed_sources',table_name='News_source')}}"> News Sources - Scraping Completed</a></li>
+		    <li><a href="{{url_for('get_multilex_data',table_name='multilex')}}"> IPO Records from DB</a></li>
                   </fieldset>
 
 
-	
+
+		<fieldset>
+		<legend> Process file without S3 bucket</legend>
+                    <li><a href="{{url_for('file_process')}}"> Process file without  S3 bucket</a></li>
+                     </fieldset>
+
+
+
 		    <fieldset>
                     <legend>Upload and Downlaod Uncleaned File from S3 bucket</legend>
                     <li><a href="{{url_for('copy_file_ipo')}}">1. Upload  Uncleaned Initial IPO File to S3 bucket</a></li>
@@ -73,7 +81,8 @@
     <br>
     <br>
     <br>
-    <div id="footer">
+    <div>
+ <footer id="footer" >
         {% block footer %}
         &copy;  For any query, Please contact  shashankgurunaga@gmail.com
         {% endblock %}

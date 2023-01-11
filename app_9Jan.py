@@ -1172,7 +1172,7 @@ def file_process_further():
 
 @app.route("/get_multilex_data/<table_name>",methods=['GET','POST'])
 def get_multilex_data(table_name):
-    msg="Welcome!! You are viewing IPO report from Multilex table !!"
+    msg="Welcome!! You are viewing report from Multilex table !!"
 
     try:
         conn = setup_connection()
@@ -1182,7 +1182,7 @@ def get_multilex_data(table_name):
         elif (conn !=None):
                 app.logger.info("connected")
                 cur = conn.cursor()
-                cur.execute(f"SELECT * FROM {table_name} order by publish_date desc ")
+                cur.execute(f"SELECT * FROM {table_name} ")
                 data = cur.fetchall()
                 cur.close()
                 conn.close()

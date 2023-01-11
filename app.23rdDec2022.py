@@ -15,11 +15,10 @@ import logging
 import pandas as pd
 
 
-
 app=Flask(__name__)
 app.config['SECRET_KEY'] = '123'
 
-logging.basicConfig(filename='record.log', level=logging.INFO, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+logging.basicConfig(filename='record.log', level=logging.DEBUG, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 
 @app.errorhandler(404)
@@ -31,12 +30,12 @@ def page_not_found(error):
 # function for setting DB cvonnection 
 def setup_connection():
     try:
-        user = 'root'
-        DB_PASSWORD = 'Mjklop@0987'
+        user = 'admin'
+        DB_PASSWORD = 'HeyMultilex12345'
         #DB_PASSWORD = 'HeyMultilex9087'
-        DB_PORT = 17616
+        DB_PORT = 3307
         passw = DB_PASSWORD
-        host='0.tcp.in.ngrok.io'
+        host='multilex-tech.cvk1q8ffpz2u.ap-south-1.rds.amazonaws.com'
         port = DB_PORT
         database = 'preipo'
         #database='multilex-tech'
@@ -48,32 +47,6 @@ def setup_connection():
     except:
         traceback.print_exc()
         app.logger.info('database not  connected')
-        return None
-
-
-def setup_s3connection():
-    import boto3
-    import botocore
-
-    # read  s3 bucket connection data from .env file 
-    env_path = Path('.', '.env')
-    load_dotenv(dotenv_path=env_path)
-
-    try: 
-        client = boto3.client(
-        's3',
-        aws_access_key_id = os.getenv('aws_access_key_id'),
-        aws_secret_access_key = os.getenv('aws_secret_access_key'),
-        region_name = os.getenv('region_name')
-        
-        )
-        return client
-    except botocore.exceptions.ParamValidationError as error:
-        app.logger.error("Parameter validation error: %s" ,error.response['Error']['Message'])
-        return None
-    except botocore.exceptions.ClientError as error: 
-        app.logger.error('S3 bucket connection failed',error.response['Error']['Message'])
-        #return error.response['Error']['Code']
         return None
 
 
@@ -183,7 +156,6 @@ def get_source_in_progress(table_name):
 
 def update_table(table_name): 
         msg=" Record Update status"
-        msg1=""
         try:        
             present=request.form.getlist('present[]')
             comment=request.form.getlist('comment[]')
@@ -204,21 +176,21 @@ def update_table(table_name):
                     row1=rowid[i]
                     comment1=comment[i] or None
                     cursor=conn.cursor()
-                    cursor.execute("UPDATE news_source SET present=%s,comment=%s WHERE id=%s" , (present1, comment1,row1))
+                    cursor.execute("UPDATE News_source SET present=%s,comment=%s WHERE id=%s" , (present1, comment1,row1))
                     conn.commit()
                     cursor.close()
                 
                 conn.close()
-                
                 msg1="You have successfully updated the records!"
-                msg=msg1
+                msg=msg1  
                                    
         except:
             traceback.print_exc()
-       
+        
         if(msg==msg1):
             data1=get_table_record(table_name,rowid)
             return render_template("update1.html", msg=msg,data=data1)
+
 
         return render_template("update1.html", msg=msg)
 
@@ -496,34 +468,38 @@ def s3bucketcopy(local_file,bucket_name,s3_file):
     import boto3
     from botocore.exceptions import NoCredentialsError
 
-    client=None
-    client = setup_s3connection()
-    if (client ==None):
-             msg= "S3 bucket connection is not successful!!"
-             return render_template("index1.html", msg=msg)
-    elif (client !=None):
-            app.logger.info(" S3 bucket connected")
+    # read  s3 bucket connection data from .env file 
+    env_path = Path('.', '.env')
+    load_dotenv(dotenv_path=env_path)
 
-            # Fetch the list of existing buckets
-            clientResponse = client.list_buckets()
 
-            # Print the bucket names one by one
-            app.logger.info('Printing bucket names...')
-            for bucket in clientResponse['Buckets']:
-                app.logger.info(f'Bucket Name: {bucket["Name"]}')
+    client = boto3.client(
+    's3',
+    aws_access_key_id = os.getenv('aws_access_key_id'),
+    aws_secret_access_key = os.getenv('aws_secret_access_key'),
+    region_name = os.getenv('region_name')
+    )
+
+    # Fetch the list of existing buckets
+    clientResponse = client.list_buckets()
+
+    # Print the bucket names one by one
+    app.logger.info('Printing bucket names...')
+    for bucket in clientResponse['Buckets']:
+        app.logger.info(f'Bucket Name: {bucket["Name"]}')
        
 
-            # upload file to S3 bucket 
-            try:
-                client.upload_file(local_file, bucket_name, s3_file)
-                app.logger.info("Upload Successful")
-                return True
-            except FileNotFoundError:
-                app.logger.info("The file was not found")
-                return False
-            except NoCredentialsError:
-                app.logger.info("Credentials not available")
-                return False
+   
+    try:
+        client.upload_file(local_file, bucket_name, s3_file)
+        app.logger.info("Upload Successful")
+        return True
+    except FileNotFoundError:
+        app.logger.info("The file was not found")
+        return False
+    except NoCredentialsError:
+        app.logger.info("Credentials not available")
+        return False
   
 
 @app.route("/copy1", methods=['GET','POST'])
@@ -661,35 +637,32 @@ def copy1_ipo():
 
 #list files of 3s3 bucket
 def list_files(bucket,prefix):
-    import botocore
 
      # read  s3 bucket connection data from .env file 
-    client =None    
-    client = setup_s3connection()
-            
-    try:        
-            response = client.list_objects_v2(
-            Bucket=bucket,
-            Prefix=prefix)
-            contents = []
-            for content in response.get('Contents', []):
-                #   it comes in form of Uncleanedipofile/PREIPO_Final_Report_2022-10-20.csv
-                list1=[]
-                list1=content['Key'].split("/")
-                if len(list1[1]) != 0:
-                    contents.append(list1[1])
-            return contents
-    except botocore.exceptions.ClientError as error:
-             # Put your error handling logic here
-             #raise error
-             msg= "S3 bucket connection is not successful!!"
-             return render_template("index1.html", msg=msg)
+    env_path = Path('.', '.env')
+    load_dotenv(dotenv_path=env_path)
 
-    except botocore.exceptions.ParamValidationError as error:
-            #raise ValueError('The parameters you provided are incorrect: {}'.format(error))
-            msg= "S3 bucket connection is not successful!!"
-            return render_template("index1.html", msg=msg)
 
+    client = boto3.client(
+        's3',
+        aws_access_key_id = os.getenv('aws_access_key_id'),
+        aws_secret_access_key = os.getenv('aws_secret_access_key'),
+        region_name = os.getenv('region_name')
+        )
+
+
+    response = client.list_objects_v2(
+        Bucket=bucket,
+        Prefix=prefix)
+    
+    contents = []
+    for content in response.get('Contents', []):
+        # 	it comes in form of Uncleanedipofile/PREIPO_Final_Report_2022-10-20.csv
+        list1=[]
+        list1=content['Key'].split("/")
+        if len(list1[1]) != 0:
+            contents.append(list1[1])
+    return contents
 
 
 @app.route("/storage")
@@ -1062,131 +1035,4 @@ def final_copy1():
             app.logger.info(e)
 
 
-@app.route("/file_process", methods=['GET','POST'])
-def file_process():
-    try:
-        app.logger.info("inside.....")
-        msg="Select the file to process  "
-        return render_template("files_link_upload_access.html",msg=msg)
-    except:
-        traceback.print_exc()
-
-
-
-
-@app.route("/file_process_further", methods=['GET','POST'])
-def file_process_further():
-    try:
-        if request.method == 'POST':
-
-            file = request.files.get('file')
-
-            # get file name selected by user .eg a.xls 
-            filename1=file.filename
-
-
-
-            # update the final cleaned  xls in AWS project directory under test sub folder 
-            folder=os.getcwd()
-
-            upload_folder= os.path.join(folder,'test')
-
-            file.save(os.path.join(upload_folder,filename1))
-            app.logger.info("File copy successful !!!")
-            
-            full_filename=os.path.join(upload_folder,filename1)
-
-            df_1 = pd.read_excel(full_filename)
-
-
-            ##########add company check module 
-            app.logger.info('df initial info %s',df_1)
-            # list to hold the indexes to drop
-            lst_index = []
-
-            #for each row in xls
-            for i in range(len(df_1)):
-                if (df_1.loc[i, "update"] != 'Update'):
-                    #read comany name
-                    #company_name1=df_1.loc[i, "Issuer Name"]
-                    company_name1=df_1.loc[i, "Companies"]
-                    app.logger.info(company_name1)
-                    #function to match with database  for the company name and get the company name from database table
-                    company1=check_for_companyname_in_multilex(company_name1)
-                    # if company name exists in database
-                    if (company1 != None) :
-                        # srtip the leading and trailing space
-                        company1=company1.strip()
-                        # get the database company name to lower case to compare with dafarame company name value
-                        company1=str(company1).lower()
-                        # get the df company name to lower case
-                        company_df=df_1['Companies'][i]
-                        #company_df=df_1['Issuer Name'][i]
-                        company_df=str(company_df).lower()
-                        app.logger.info("company_df", company_df)
-                        # compare databse company name with dataframe company name
-                        if ( company1== company_df):
-                            # if they match , put the index value in lst_index
-                            lst_index.append(i)
-                            app.logger.info("lst_index",lst_index)
-            # drop the corresponding rows from th edataframe with matching company name in multilex
-            df_1.drop(index=lst_index, inplace = True)
-
-
-            #create new xls post company check and keep it in temp folder in AWS 
-            upload_folder1= os.path.join(folder,'temp')
-           
-            local_file1=os.path.join(upload_folder1,filename1)
-            writer= pd.ExcelWriter(local_file1) 
-            # write dataframe to excel
-            df_1.to_excel(writer)
-            # save the excel
-            writer.save()
-
-            #upload to database
-            #upload to DB
-            msg=upload_file_to_db(df_1)
-
-             
-            #send mail
-            sender_email="Multilex123@gmail.com"
-            receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
-
-            #receiver_email=['shashank.gurunaga@gmail.com','gurunaga@gmail.com']
-            recv_mail_bcc="shashank.gurunaga@gmail.com"
-            mail_subject="Today's Final , cleaned PREIPO is report attached and records are also uploaded in Database "
-            mail_text="Today's final , cleaned PREIPO is report attached and records are also uploaded in Database"
-
-            sendmail(local_file1,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
-
-            
-            #display message post DB upload 
-            return render_template("confirmation.html",msg=msg)
-            
-
-
-    except Exception as e:
-            app.logger.info(e)
-
-
-
-@app.route("/get_multilex_data/<table_name>",methods=['GET','POST'])
-def get_multilex_data(table_name):
-    msg="Welcome!! You are viewing IPO report from Multilex table !!"
-
-    try:
-        conn = setup_connection()
-        if (conn ==None):
-                 msg="databse connection is not successful!!"
-                 return render_template("index1.html", msg=msg)
-        elif (conn !=None):
-                app.logger.info("connected")
-                cur = conn.cursor()
-                cur.execute(f"SELECT * FROM {table_name} order by publish_date desc ")
-                data = cur.fetchall()
-                cur.close()
-                conn.close()
-                return render_template("multilex_data.html", data = data,msg=msg)
-    except:
-        traceback.print_exc()
 

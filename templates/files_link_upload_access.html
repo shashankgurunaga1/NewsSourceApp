@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block topbar %} {{msg}} {% endblock %}
+                    
+{% block content %}
+
+<form action="{{ url_for('file_process_further')}}" method="post" autocomplete="off" enctype="multipart/form-data" >
+	<h3><label ><b>The following operations will be performed  :</b></label><h3>
+			<br>
+			<br>
+			
+		              <p>
+			      <dl>
+			 	<li> a) Upload the XLS  to AWS dir temporarily </li>
+				<li> b) run the company check module to identify company which are already existing in Database  </li>
+				<li> c) update the database  with the file content  </li>
+				 <li> d) send mail attaching the final xls post company validation </li>
+			      </dl>
+		</p>
+                        </h2>
+                        <br>
+                        <br>
+                        <input type="file" placeholder="Choose folder" id="file"  name="file" required/><br><br>
+                        
+                        <br>
+                        
+                        <button name="submit" onclick="file_process_further()">Process FIle</button>
+                    </form>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <div>
+		    </div>
+
+{% endblock %}
+ 
