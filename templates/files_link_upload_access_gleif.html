@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block topbar %} {{msg}} {% endblock %}
+                    
+{% block content %}
+
+<form action="{{ url_for('file_process_gleif1')}}" method="post" autocomplete="off" enctype="multipart/form-data" >
+	<h3><label ><b> Add gleif fields and send the updated xls to the stakeholders</b></label><h3>
+			<br>
+                        <br>
+                        <br>
+                        <input type="file" placeholder="Choose folder" id="file"  name="file" required/><br><br>
+                        
+                        <br>
+                        
+                        <button name="submit" onclick="file_process_gleif1()">Process FIle</button>
+                    </form>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <br>
+		    <div>
+		    </div>
+
+{% endblock %}
+ 

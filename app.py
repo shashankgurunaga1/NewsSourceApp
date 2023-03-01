@@ -34,7 +34,7 @@ def setup_connection():
         user = 'root'
         DB_PASSWORD = 'Mjklop@0987'
         #DB_PASSWORD = 'HeyMultilex9087'
-        DB_PORT = 17616
+        DB_PORT = 13480 
         passw = DB_PASSWORD
         host='0.tcp.in.ngrok.io'
         port = DB_PORT
@@ -1072,10 +1072,85 @@ def file_process():
         traceback.print_exc()
 
 
+@app.route("/file_process_gleif", methods=['GET','POST'])
+def file_process_gleif():
+    try:
+        app.logger.info("inside.....")
+        msg="Select the file to process  "
+        return render_template("files_link_upload_access_gleif.html",msg=msg)
+    except:
+        traceback.print_exc()
+
+@app.route("/file_process_gleif1", methods=['GET','POST'])
+def file_process_gleif1():
+    import gleif_api
+    try:
+        if request.method == 'POST':
+            msg=""
+            file = request.files.get('file')
+
+            # get file name selected by user .eg a.xls
+            filename1=file.filename
+
+
+
+            # update the final cleaned  xls in AWS project directory under test sub folder
+            folder=os.getcwd()
+
+            upload_folder= os.path.join(folder,'test')
+
+            file.save(os.path.join(upload_folder,filename1))
+            app.logger.info("File copy successful !!!")
+
+
+            local_file1=os.path.join(upload_folder,filename1)
+
+
+            #add gleif entries
+            df2 = pd.read_excel(local_file1)
+            gleif_api.generate_final_file(df2)
+            app.logger.info("df2 .....",df2)
+            upload_folder2= os.path.join(folder,'tempglief')
+            local_file2=os.path.join(upload_folder2,filename1)
+            writer= pd.ExcelWriter(local_file2)
+            # write dataframe to excel
+            df2.to_excel(writer)
+            # save the excel
+            writer.save()
+            msg="Gleif fields are appended "
+
+
+            #send mail
+            sender_email="Multilex123@gmail.com"
+            receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+
+            #receiver_email=['shashank.gurunaga@gmail.com','gurunaga@gmail.com']
+            recv_mail_bcc="shashank.gurunaga@gmail.com"
+            mail_subject="Today's Final xls with additional fields appended from Gleif api "
+            mail_text="Today's final xls with additional fields appended from Gleif api"
+
+            sendmail(local_file2,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
+
+
+
+            #display message post DB upload 
+            return render_template("confirmation.html",msg=msg)
+
+
+
+    except Exception as e:
+            app.logger.info(e)
+
+
+
+
+
+
 
 
 @app.route("/file_process_further", methods=['GET','POST'])
 def file_process_further():
+    import gleif_api 
     try:
         if request.method == 'POST':
 
@@ -1147,17 +1222,32 @@ def file_process_further():
             #upload to DB
             msg=upload_file_to_db(df_1)
 
+
+            '''
+
+            #add gleif entries
+            df2 = pd.read_excel(local_file1)
+            print(gleif_api.generate_final_file(df2))
+            upload_folder2= os.path.join(folder,'tempglief')
+            local_file2=os.path.join(upload_folder2,filename1)
+            writer= pd.ExcelWriter(local_file2)
+            # write dataframe to excel
+            df2.to_excel(writer)
+            # save the excel
+            writer.save()
+
+            '''
              
             #send mail
             sender_email="Multilex123@gmail.com"
-            receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+            #receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
 
-            #receiver_email=['shashank.gurunaga@gmail.com','gurunaga@gmail.com']
+            receiver_email=['shashank.gurunaga@gmail.com','gurunaga@gmail.com']
             recv_mail_bcc="shashank.gurunaga@gmail.com"
             mail_subject="Today's Final , cleaned PREIPO is report attached and records are also uploaded in Database "
             mail_text="Today's final , cleaned PREIPO is report attached and records are also uploaded in Database"
 
-            sendmail(local_file1,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
+            sendmail(local_file2,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
 
             
             #display message post DB upload 
