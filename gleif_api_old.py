@@ -53,42 +53,34 @@ def company_info1(companyname,iso):
         json_format = json.loads(response.text)
         res_obj = {"company_name":None,"legalAddress":None,"officeAddress":None,"country":None,"LEI":None}
         objects = []
-        print("inside company info function:")
         #print("json format", json_format)
         try:
-                for i in json_format['data']:
-                        print("inside json output") 
+                        for i in json_format['data']:
 
-                        key='relationships'
-                        x = list(i.keys())
-                        if(x.count(key) == 1):
-                                print ("inside  keys in Json ........")
-                                #api_url1=i['relationships']['lei-records']['links']['related']
-                                response1=requests.get(api_url)
-                                json_format1 = json.loads(response1.text)
-                                print (json_format1)
-                                res_obj["company_name"] = json_format1['data']['attributes']['entity']['legalName']['name']
+                                #print ("inside  keys in Json ........", i )
+                                res_obj["company_name"] = i['attributes']['entity']['legalName']['name']
                                 print("company name", res_obj["company_name"] )
                                 legalAddress_details=""
-                                for j in json_format1['data']['attributes']['entity']['legalAddress']['addressLines']:
-                                        print("inside jjjjjjjjjjjjj loop")
+                                for j in i ['attributes']['entity']['legalAddress']['addressLines']:
                                         legalAddress_details=str(legalAddress_details) + str(j)
-                                legalAddress=str(legalAddress_details)+" "+str(json_format1['data']['attributes']['entity']['legalAddress']['city'])+ " "+str(json_format1['data']['attributes']['entity']['legalAddress']['region'])+ " "+str(json_format1['data']['attributes']['entity']['legalAddress']['country'])
+                                legalAddress=str(legalAddress_details)+" "+str(i['attributes']['entity']['legalAddress']['city'])+ " "+str(i['attributes']['entity']['legalAddress']['region'])+ " "+str(i['attributes']['entity']['legalAddress']['country'])
                                 res_obj["legalAddress"] = legalAddress
 
                                 print ("legaladdress", legalAddress) 
-                                res_obj["country"] = json_format1['data']['attributes']['entity']['legalAddress']['country']
+                                res_obj["country"] = i['attributes']['entity']['legalAddress']['country']
                                 HQAddress_details = ""
-                                for j in json_format1['data']['attributes']['entity']['headquartersAddress']['addressLines']:
+                                for j in i['attributes']['entity']['headquartersAddress']['addressLines']:
                                         HQAddress_details=str(HQAddress_details) + str(j)
                                 
-                                headquarterAddress = str(HQAddress_details) + " " + str(json_format1['data']['attributes']['entity']['headquartersAddress']['city']) + " "+ str(json_format1['data']['attributes']['entity']['headquartersAddress']['region'])+ " "+str(json_format1['data']['attributes']['entity']['headquartersAddress']['country'])
+                                headquarterAddress = str(HQAddress_details) + " " + str(i['attributes']['entity']['headquartersAddress']['city']) + " "+ str(i['attributes']['entity']['headquartersAddress']['region'])+ " "+str(i['attributes']['entity']['headquartersAddress']['country'])
                                 res_obj["officeAddress"] = headquarterAddress
-                                res_obj["LEI"] = json_format['data'][0]["relationships"]["lei-records"]["data"]["id"]
+                                res_obj["LEI"] = i["id"]
 
-                                print("res_obji legal address...", res_obj["legalAddress"]) 
+                                print("res_obji headquarter  address...", res_obj["officeAddress"]) 
+                                print ("lei ", res_obj["LEI"])
                                 if iso in headquarterAddress.strip().split():
                                         objects.append(res_obj)
+                                        print("country matches .....")
         except:
                 return res_obj
         if len(objects) == 0:
@@ -129,10 +121,11 @@ def generate_final_file(df):
 
 if __name__ == "__main__":
         
-        df = pd.read_excel("09-01-2022.xlsx")
-        generate_final_file(df)
-        print(df["LegalAddress"])
-        print(df["OfficeAddress"])
+        df = pd.read_excel("11-01-2023.xlsx")
+        #generate_final_file(df)
+        company_info1("bookmyshow", "IN")
+        #print(df["LegalAddress"])
+        #print(df["OfficeAddress"])
         # get_company_info("DIVGI TORQTRANSFER SYSTEMS LIMITED","IN")
         # "335800N9OHIPOMBP7C30"
         # print(company_info1("Dar Al Arkan","UAE"))

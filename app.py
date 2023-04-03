@@ -1108,30 +1108,55 @@ def file_process_gleif1():
 
             #add gleif entries
             df2 = pd.read_excel(local_file1)
-            gleif_api.generate_final_file(df2)
-            app.logger.info("df2 .....",df2)
-            upload_folder2= os.path.join(folder,'tempglief')
-            local_file2=os.path.join(upload_folder2,filename1)
+
+
+
+            app.logger.info("df2 .....")
+            app.logger.info(df2)
+
+
+            #upload_folder2= os.path.join(folder,'tempglief')
+            #local_file2=os.path.join(upload_folder2,filename1)
+
+            
+          
+            # call gleif function
+            try:
+                returnvalue= gleif_api.generate_final_file(df2, local_file1)
+
+
+            except:
+                 app.loggger.info(" inside gleif exception")
+
+            app.logger.info("returnvalue")
+            app.logger.info(returnvalue)
+
+
+            '''
+            # to be commented later  
             writer= pd.ExcelWriter(local_file2)
             # write dataframe to excel
             df2.to_excel(writer)
             # save the excel
             writer.save()
-            msg="Gleif fields are appended "
+
+            '''
+            msg="Gleif and Opencorporate fields are appended "
 
 
             #send mail
             sender_email="Multilex123@gmail.com"
-            receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
+            #receiver_email = ['vishwajeethogale307@gmail.com', 'sharikavallambatla@gmail.com','shashank.gurunaga@gmail.com','sharikavallambatlapes@gmail.com']
 
-            #receiver_email=['shashank.gurunaga@gmail.com','gurunaga@gmail.com']
+            receiver_email=['shashank.gurunaga@gmail.com','gurunaga@gmail.com']
             recv_mail_bcc="shashank.gurunaga@gmail.com"
             mail_subject="Today's Final xls with additional fields appended from Gleif api "
             mail_text="Today's final xls with additional fields appended from Gleif api"
 
-            sendmail(local_file2,sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
+            sendmail("FinalFile.xlsx",sender_email,receiver_email,recv_mail_bcc,mail_subject,mail_text)
+            time.sleep(3)
 
-
+            os.remove("FinalFile.xlsx")
 
             #display message post DB upload 
             return render_template("confirmation.html",msg=msg)

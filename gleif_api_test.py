@@ -123,7 +123,9 @@ if __name__ == "__main__":
         
         df = pd.read_excel("11-01-2023.xlsx")
         #generate_final_file(df)
-        company_info1("bookmyshow", "IN")
+        #company_info1("bookmyshow", "IN")
+        #company_info1("Security Bank Corporation.","PH")
+        company_info1("Bounty Agro Ventures, Inc.","PH")
         #print(df["LegalAddress"])
         #print(df["OfficeAddress"])
         # get_company_info("DIVGI TORQTRANSFER SYSTEMS LIMITED","IN")
